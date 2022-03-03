@@ -1,5 +1,5 @@
 module FormsPreprocessors
-using CSV, DataFrames, DataFramesMeta, Missings, Parameters
+using DataFrames, DataFramesMeta, Missings, Parameters
 
 function apply_dict(dict, x)
     if ismissing(x)
