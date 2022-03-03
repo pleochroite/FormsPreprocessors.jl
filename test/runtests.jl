@@ -4,6 +4,8 @@ using DataFrames, DataFramesMeta
 
 df = DataFrame(bt = ["A", "A", "O", "AB", "B", "B", "C"],
     rh = ["+", "-", "+", "+", "+", "+", "+"])
+df_w_missing = DataFrame(bt = ["A", "A", "O", "AB", "B", missing, "B", "C", missing],
+    rh = ["+", "-", missing, "+", "+", missing, "+", "+", missing])
 bloodtype = Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "4"])
 
 
@@ -21,10 +23,11 @@ bloodtype = Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "4"])
     end
 
     @testset "convert_answer!" begin
-        @test size(convert_answer!(df, :bt, bloodtype), 1) == 7
-        @test convert_answer!(df, :bt, bloodtype)[4, 1] == "4"
-        @test convert_answer!(df, :bt, bloodtype)[7, 1] == "C"
+        @test size(convert_answer!(df, :bt, bloodtype)) == (7, 2)
+        @test convert_answer!(df, :bt, bloodtype).bt == ["1", "1", "3", "4", "2", "2", "C"]
         @test convert_answer!(df, :bt, bloodtype)[:, 2] == df[:,2]
+        @test convert_answer!(df, :rh, bloodtype) == df
+        @test isequal(convert_answer!(df_w_missing, :bt, bloodtype).bt, ["1", "1", "3", "4", "2", missing, "2", "C", missing])
     end
 
 
