@@ -9,6 +9,7 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Missings = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 
 [compat]
 julia = "1.6"
