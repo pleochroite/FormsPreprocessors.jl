@@ -1,0 +1,13 @@
+name = "FormsPreprocessors"
+uuid = "573f2a97-ac05-449c-aa84-1375a63c8804"
+authors = ["schigy <sychulc@me.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
