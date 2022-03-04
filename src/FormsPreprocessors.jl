@@ -1,9 +1,17 @@
 module FormsPreprocessors
 using Revise, DataFrames, DataFramesMeta, Missings, Parameters, CSV
 
+function apply_dict(dict, x::Vector{String})
+    [apply_dict(dict, el) for el ∈ x]
+end
+
+function apply_dict(dict, x::Vector{Union{String,Missing}})
+    [apply_dict(dict, el) for el ∈ x]
+end
+
 function apply_dict(dict, x)
     if ismissing(x)
-        missing    
+        missing
     elseif x ∈ keys(dict)
         dict[x]
     else
@@ -16,16 +24,27 @@ function convert_answer!(df, key, dict)
 end
 
 function gen_conversion_dict(vec1, vec2)
-    if length(vec1) != length(vec2)
+    if length(vec1) > length(unique(vec1))
+        throw(error("Some keys appear multiple times. $(vec1)"))
+    elseif length(vec1) != length(vec2)
         @warn "Lengths of two vectors are not identical. $(min(length(vec1), length(vec2))) entries generated."
     elseif length(vec1) == 0
-        @error "Both vectors are empty."
+        @error "Both vectors are empty. An empty Dict generated."
     end
-    Dict([val1 => val2 for (val1, val2) ∈ zip(vec1,vec2)])
+    Dict([val1 => val2 for (val1, val2) ∈ zip(vec1, vec2)])
 end
 
+function renaming_dict(vec1::Vector{String}, vec2::Union{Vector{Any}, Vector{String}} = [], other = "other")
+    n = length(vec1) - length(vec2)
+    if n < 0
+        throw(error("Key vector is shorter than value vector."))
+    elseif n == 0
+        v = vec2
+    else
+        v = vcat(vec2, fill(other, n))
+    end
+    gen_conversion_dict(vec1, v)
+end
 
-
-
-export apply_dict, convert_answer!, gen_conversion_dict
+export apply_dict, convert_answer!, gen_conversion_dict, renaming_dict
 end
