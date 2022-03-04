@@ -1,5 +1,5 @@
 module FormsPreprocessors
-using DataFrames, DataFramesMeta, Missings, Parameters, CSV
+using Revise, DataFrames, DataFramesMeta, Missings, Parameters, CSV
 
 function apply_dict(dict, x)
     if ismissing(x)
@@ -16,6 +16,11 @@ function convert_answer!(df, key, dict)
 end
 
 function gen_conversion_dict(vec1, vec2)
+    if length(vec1) != length(vec2)
+        @warn "Lengths of two vectors are not identical. $(min(length(vec1), length(vec2))) entries generated."
+    elseif length(vec1) == 0
+        @error "Both vectors are empty."
+    end
     Dict([val1 => val2 for (val1, val2) ∈ zip(vec1,vec2)])
 end
 
