@@ -46,5 +46,10 @@ function renaming_dict(vec1::Vector{String}, vec2::Union{Vector{Any}, Vector{Str
     gen_conversion_dict(vec1, v)
 end
 
-export apply_dict, convert_answer!, gen_conversion_dict, renaming_dict
+function recode!(df, key, vec_from::Vector{String}, vec_to::Union{Vector{Any}, Vector{String}}=[], other="other")
+    renamer = renaming_dict(vec_from, vec_to, other)
+    convert_answer!(df, key, renamer)
+end
+
+export apply_dict, convert_answer!, gen_conversion_dict, renaming_dict, recode!
 end

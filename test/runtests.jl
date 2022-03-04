@@ -2,14 +2,44 @@ using FormsPreprocessors
 using Test
 using DataFrames, DataFramesMeta
 
-df = DataFrame(bt = ["A", "A", "O", "AB", "B", "B", "C"],
-    rh = ["+", "-", "+", "+", "+", "+", "+"])
-df_w_missing = DataFrame(bt = ["A", "A", "O", "AB", "B", missing, "B", "C", missing],
-    rh = ["+", "-", missing, "+", "+", missing, "+", "+", missing])
-bloodtype = Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "4"])
+function gen_df()
+    DataFrame(bt = ["A", "A", "O", "AB", "B", "B", "C"],
+        rh = ["+", "-", "+", "+", "+", "+", "+"])
+end
 
+function gen_df_missing()
+    DataFrame(bt = ["A", "A", "O", "AB", "B", missing, "B", "C", missing],
+        rh = ["+", "-", missing, "+", "+", missing, "+", "+", missing])
+end
+
+function gen_df_nest()
+    DataFrame(bt = ["A", ["A", "AB"], "O", ["AB", "B", "B"], "K", "B", "C"],
+        rh = ["+", "-", "+", "+", "+", "+", "+"])
+end
+
+function gen_df_nest_missing()
+    DataFrame(bt = ["A", ["A", "M"], "O", ["AB", missing, "B"], "K", missing, "C"],
+        rh = ["+", "-", "+", "+", "+", "+", "+"])
+end
 
 @testset "SurveyPreprocessors.jl" begin
+    df_cv = DataFrame(bt = ["1", "1", "3", "4", "2", "2", "C"],
+    rh = ["+", "-", "+", "+", "+", "+", "+"])
+
+    df_missing_cv = DataFrame(bt = ["1", "1", "3", "4", "2", missing, "2", "C", missing],
+        rh = ["+", "-", missing, "+", "+", missing, "+", "+", missing])
+
+    df_nest_cv = DataFrame(bt = ["1", ["1", "4"], "3", ["4", "2", "2"], "K", "2", "C"],
+        rh = ["+", "-", "+", "+", "+", "+", "+"])
+
+    df_nest_m_cv = DataFrame(bt = ["1", ["1", "M"], "3", ["4", missing, "2"], "K", missing, "C"],
+        rh = ["+", "-", "+", "+", "+", "+", "+"])
+
+    bloodtype = Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "4"])
+
+    ks = ["A", "B", "O", "AB"]
+    vs = ["1", "2", "3", "4"]
+
     @testset "apply_dict(String)" begin
         @test apply_dict(bloodtype, "A") == "1"
         @test apply_dict(bloodtype, "B") == "2"
@@ -30,24 +60,16 @@ bloodtype = Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "4"])
     end
 
     @testset "convert_answer!" begin
-        @test size(convert_answer!(df, :bt, bloodtype)) == (7, 2)
-        @test convert_answer!(df, :bt, bloodtype).bt == ["1", "1", "3", "4", "2", "2", "C"]
-        @test convert_answer!(df, :bt, bloodtype)[:, 2] == df[:,2]
-        @test convert_answer!(df, :rh, bloodtype) == df
-        @test isequal(convert_answer!(df_w_missing, :bt, bloodtype).bt, ["1", "1", "3", "4", "2", missing, "2", "C", missing])
-
-        df_nest = DataFrame(bt = ["A", ["A", "AB"], "O", ["AB", "B", "B"], "K", "B", "C"],
-            rh = ["+", "-", "+", "+", "+", "+", "+"])
-        @test convert_answer!(df_nest, :bt, bloodtype).bt == ["1", ["1", "4"], "3", ["4", "2", "2"], "K", "2", "C"]
-
-        df_nest_m = DataFrame(bt = ["A", ["A", "M"], "O", ["AB", missing, "B"], "K", missing, "C"],
-        rh = ["+", "-", "+", "+", "+", "+", "+"])
-        @test isequal(convert_answer!(df_nest_m, :bt, bloodtype).bt, ["1", ["1", "M"], "3", ["4", missing, "2"], "K", missing, "C"])
+        @test size(convert_answer!(gen_df(), :bt, bloodtype)) == (7, 2)
+        @test convert_answer!(gen_df(), :bt, bloodtype).bt == ["1", "1", "3", "4", "2", "2", "C"]
+        @test convert_answer!(gen_df(), :bt, bloodtype)[:, 2] == gen_df()[:,2]
+        @test convert_answer!(gen_df(), :rh, bloodtype) == gen_df()
+        @test isequal(convert_answer!(gen_df_missing(), :bt, bloodtype).bt, ["1", "1", "3", "4", "2", missing, "2", "C", missing])
+        @test convert_answer!(gen_df_nest(), :bt, bloodtype) == df_nest_cv
+        @test isequal(convert_answer!(gen_df_nest_missing(), :bt, bloodtype), df_nest_m_cv)
     end
 
     @testset "gen_conversion_dict" begin
-        ks = ["A", "B", "O", "AB"]
-        vs = ["1", "2", "3", "4"]
         @test typeof(gen_conversion_dict(ks, vs)) == Dict{String, String}
         @test gen_conversion_dict(ks, vs) == bloodtype
         @test length(gen_conversion_dict(ks, vs[1:3])) == 3
@@ -60,8 +82,6 @@ bloodtype = Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "4"])
     end
 
     @testset "renaming_dict" begin
-        ks = ["A", "B", "O", "AB"]
-        vs = ["1", "2", "3", "4"]
         @test renaming_dict(ks, vs) == bloodtype
         @test renaming_dict(ks, vs[1:3]) == Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "other"])
         @test renaming_dict(ks, vs[1:3], "その他") == Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "その他"])
@@ -75,6 +95,20 @@ bloodtype = Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "4"])
         @test_throws MethodError renaming_dict("foo", ["1", "2", "3"])
         @test_throws MethodError renaming_dict(ks, "BA", "OTHER")
         @test_throws MethodError renaming_dict("FOO", "BAR")
+    end
+
+    @testset "recode!" begin
+        @test recode!(gen_df(), :bt, ks, vs) == df_cv
+        @test isequal(recode!(gen_df_missing(), :bt, ks, vs), df_missing_cv)
+        @test recode!(gen_df_nest(), :bt, ks, vs) == df_nest_cv
+        @test isequal(recode!(gen_df_nest_missing(), :bt, ks, vs), df_nest_m_cv)
+        @test recode!(gen_df(), :bt, ks, ["1", "2", "3"]).bt == ["1", "1", "3", "other", "2", "2", "C"]
+        @test isequal(recode!(gen_df_missing(), :bt, ks, vs[1:3]).bt, 
+            ["1", "1", "3", "other", "2", missing, "2", "C", missing])
+        @test isequal(recode!(gen_df_nest_missing(), :bt, ks, vs[1:3]).bt,
+            ["1", ["1", "M"], "3", ["other", missing, "2"], "K", missing, "C"])
+        @test isequal(recode!(gen_df_nest_missing(), :bt, ks).bt, 
+            ["other", ["other", "M"], "other", ["other", missing, "other"], "K", missing, "C"])
     end
 
 
