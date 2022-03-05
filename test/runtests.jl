@@ -2,22 +2,22 @@ using FormsPreprocessors
 using Test
 using DataFrames, DataFramesMeta
 
-function gen_df()
+function df()
     DataFrame(bt = ["A", "A", "O", "AB", "B", "B", "C"],
         rh = ["+", "-", "+", "+", "+", "+", "+"])
 end
 
-function gen_df_missing()
+function df_missing()
     DataFrame(bt = ["A", "A", "O", "AB", "B", missing, "B", "C", missing],
         rh = ["+", "-", missing, "+", "+", missing, "+", "+", missing])
 end
 
-function gen_df_nest()
+function df_nest()
     DataFrame(bt = ["A", ["A", "AB"], "O", ["AB", "B", "B"], "K", "B", "C"],
         rh = ["+", "-", "+", "+", "+", "+", "+"])
 end
 
-function gen_df_nest_missing()
+function df_nest_missing()
     DataFrame(bt = ["A", ["A", "M"], "O", ["AB", missing, "B"], "K", missing, "C"],
         rh = ["+", "-", "+", "+", "+", "+", "+"])
 end
@@ -60,25 +60,25 @@ end
     end
 
     @testset "convert_answer!" begin
-        @test size(FormsPreprocessors.convert_answer!(gen_df(), :bt, bloodtype)) == (7, 2)
-        @test FormsPreprocessors.convert_answer!(gen_df(), :bt, bloodtype).bt == ["1", "1", "3", "4", "2", "2", "C"]
-        @test FormsPreprocessors.convert_answer!(gen_df(), :bt, bloodtype)[:, 2] == gen_df()[:,2]
-        @test FormsPreprocessors.convert_answer!(gen_df(), :rh, bloodtype) == gen_df()
-        @test isequal(FormsPreprocessors.convert_answer!(gen_df_missing(), :bt, bloodtype).bt, ["1", "1", "3", "4", "2", missing, "2", "C", missing])
-        @test FormsPreprocessors.convert_answer!(gen_df_nest(), :bt, bloodtype) == df_nest_cv
-        @test isequal(FormsPreprocessors.convert_answer!(gen_df_nest_missing(), :bt, bloodtype), df_nest_m_cv)
+        @test size(FormsPreprocessors.convert_answer!(df(), :bt, bloodtype)) == (7, 2)
+        @test FormsPreprocessors.convert_answer!(df(), :bt, bloodtype).bt == ["1", "1", "3", "4", "2", "2", "C"]
+        @test FormsPreprocessors.convert_answer!(df(), :bt, bloodtype)[:, 2] == df()[:,2]
+        @test FormsPreprocessors.convert_answer!(df(), :rh, bloodtype) == df()
+        @test isequal(FormsPreprocessors.convert_answer!(df_missing(), :bt, bloodtype).bt, ["1", "1", "3", "4", "2", missing, "2", "C", missing])
+        @test FormsPreprocessors.convert_answer!(df_nest(), :bt, bloodtype) == df_nest_cv
+        @test isequal(FormsPreprocessors.convert_answer!(df_nest_missing(), :bt, bloodtype), df_nest_m_cv)
     end
 
-    @testset "gen_conversion_dict" begin
-        @test typeof(FormsPreprocessors.gen_conversion_dict(ks, vs)) == Dict{String, String}
-        @test FormsPreprocessors.gen_conversion_dict(ks, vs) == bloodtype
-        @test length(FormsPreprocessors.gen_conversion_dict(ks, vs[1:3])) == 3
-        @test_logs (:warn, ) FormsPreprocessors.gen_conversion_dict(ks, vs[1:3])
-        @test_logs (:warn, ) FormsPreprocessors.gen_conversion_dict(ks, [])
-        @test length(FormsPreprocessors.gen_conversion_dict([], vs)) == 0
-        @test FormsPreprocessors.gen_conversion_dict([], []) == Dict([])
-        @test_logs (:error, ) FormsPreprocessors.gen_conversion_dict([], [])
-        @test_throws ErrorException FormsPreprocessors.gen_conversion_dict(["A", "B", "A"], ["C", "D", "E"])
+    @testset "conversion_dict" begin
+        @test typeof(FormsPreprocessors.conversion_dict(ks, vs)) == Dict{String, String}
+        @test FormsPreprocessors.conversion_dict(ks, vs) == bloodtype
+        @test length(FormsPreprocessors.conversion_dict(ks, vs[1:3])) == 3
+        @test_logs (:warn, ) FormsPreprocessors.conversion_dict(ks, vs[1:3])
+        @test_logs (:warn, ) FormsPreprocessors.conversion_dict(ks, [])
+        @test length(FormsPreprocessors.conversion_dict([], vs)) == 0
+        @test FormsPreprocessors.conversion_dict([], []) == Dict([])
+        @test_logs (:error, ) FormsPreprocessors.conversion_dict([], [])
+        @test_throws ErrorException FormsPreprocessors.conversion_dict(["A", "B", "A"], ["C", "D", "E"])
     end
 
     @testset "renaming_dict" begin
@@ -98,16 +98,16 @@ end
     end
 
     @testset "recode!" begin
-        @test recode!(gen_df(), :bt, ks, vs) == df_cv
-        @test isequal(recode!(gen_df_missing(), :bt, ks, vs), df_missing_cv)
-        @test recode!(gen_df_nest(), :bt, ks, vs) == df_nest_cv
-        @test isequal(recode!(gen_df_nest_missing(), :bt, ks, vs), df_nest_m_cv)
-        @test recode!(gen_df(), :bt, ks, ["1", "2", "3"]).bt == ["1", "1", "3", "other", "2", "2", "C"]
-        @test isequal(recode!(gen_df_missing(), :bt, ks, vs[1:3]).bt, 
+        @test recode!(df(), :bt, ks, vs) == df_cv
+        @test isequal(recode!(df_missing(), :bt, ks, vs), df_missing_cv)
+        @test recode!(df_nest(), :bt, ks, vs) == df_nest_cv
+        @test isequal(recode!(df_nest_missing(), :bt, ks, vs), df_nest_m_cv)
+        @test recode!(df(), :bt, ks, ["1", "2", "3"]).bt == ["1", "1", "3", "other", "2", "2", "C"]
+        @test isequal(recode!(df_missing(), :bt, ks, vs[1:3]).bt, 
             ["1", "1", "3", "other", "2", missing, "2", "C", missing])
-        @test isequal(recode!(gen_df_nest_missing(), :bt, ks, vs[1:3]).bt,
+        @test isequal(recode!(df_nest_missing(), :bt, ks, vs[1:3]).bt,
             ["1", ["1", "M"], "3", ["other", missing, "2"], "K", missing, "C"])
-        @test isequal(recode!(gen_df_nest_missing(), :bt, ks).bt, 
+        @test isequal(recode!(df_nest_missing(), :bt, ks).bt, 
             ["other", ["other", "M"], "other", ["other", missing, "other"], "K", missing, "C"])
     end
 
@@ -130,6 +130,15 @@ end
             [["A", "B", "C", "D"], ["EFG"], missing])
         @test_throws MethodError FormsPreprocessors.split_ma([missing])
     end
+
+    function df_fruit()
+        DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
+            "apple", "lemon;apple", "kiwi;melon", "kiwi;apple;orange"],
+            expense = [250, 890, 150, 240, 800, 350])
+    end
+
+
+
 
 
 end

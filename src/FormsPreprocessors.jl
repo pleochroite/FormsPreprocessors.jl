@@ -23,7 +23,7 @@ function convert_answer!(df, key, dict)
     @transform!(df, $key = map(x -> apply_dict(dict, x), $key))
 end
 
-function gen_conversion_dict(vec1, vec2)
+function conversion_dict(vec1, vec2)
     if length(vec1) > length(unique(vec1))
         throw(error("Some keys appear multiple times. $(vec1)"))
     elseif length(vec1) != length(vec2)
@@ -43,7 +43,7 @@ function renaming_dict(vec1::Vector{String}, vec2::Union{Vector{Any}, Vector{Str
     else
         v = vcat(vec2, fill(other, n))
     end
-    gen_conversion_dict(vec1, v)
+    conversion_dict(vec1, v)
 end
 
 function recode!(df, key, vec_from::Vector{String}, vec_to::Union{Vector{Any}, Vector{String}}=[], other="other")
@@ -54,6 +54,20 @@ end
 function split_ma(x, delim=";")
     ismissing(x) ? missing : split(x,delim)
 end
+
+function answers_to_dummy(answer, col)
+	results = []
+	_split_col = split_ma.(col)
+	for cell ∈ _split_col
+		if ismissing(cell)
+			push!(results, missing)
+		else
+			push!(results, answer ∈ cell |> x ->x ? "yes" : "no")
+		end
+	end
+	results
+end
+
 
 export recode!
 end
