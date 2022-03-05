@@ -62,12 +62,34 @@ function answers_to_dummy(answer, col)
 		if ismissing(cell)
 			push!(results, missing)
 		else
-			push!(results, answer ∈ cell |> x ->x ? "yes" : "no")
+			push!(results, answer ∈ cell ? "yes" : "no")
 		end
 	end
 	results
 end
 
+function onehot(d, key; ordered_answers=[])
+	col = d[:,key]
+	dummy_cols = []
+
+    if length(ordered_answers) == 0
+        ordered_answers = col |> skipmissing |>
+        Itarators.flatten |> unique
+    end
+
+    if length(ordered_answers) > length(unique(ordered_answers))
+        throw(ArgumentError("Duplicate values detected. Please check: $(ordered_answers)"))
+    end
+
+	for ans ∈ ordered_answers
+		dummy = answers_to_dummy(ans, col)
+		push!(dummy_cols, dummy)
+	end
+
+	prefix = String(key)
+	colnames = prefix .* "_" .* ordered_answers
+	DataFrame(dummy_cols, colnames)
+end
 
 export recode!
 end
