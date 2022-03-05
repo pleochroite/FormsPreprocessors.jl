@@ -1,15 +1,21 @@
 module FormsPreprocessors
 using Revise, DataFrames, DataFramesMeta, Missings, Parameters, CSV
 
+const MaybeString = Union{Missing, String}
+
 function apply_dict(dict, x::Vector{String})
     [apply_dict(dict, el) for el ∈ x]
 end
 
-function apply_dict(dict, x::Vector{Union{String,Missing}})
+function apply_dict(dict, x::Vector{MaybeString})
     [apply_dict(dict, el) for el ∈ x]
 end
 
-function apply_dict(dict, x)
+function apply_dict(dict, x::Vector{Missing})
+    [apply_dict(dict, el) for el ∈ x]
+end
+
+function apply_dict(dict, x::MaybeString)
     if ismissing(x)
         missing
     elseif x ∈ keys(dict)
@@ -18,6 +24,7 @@ function apply_dict(dict, x)
         x
     end
 end
+
 
 function convert_answer!(df, key, dict)
     @transform!(df, $key = map(x -> apply_dict(dict, x), $key))
@@ -68,19 +75,26 @@ function answers_to_dummy(answer, col)
 	results
 end
 
+
 function onehot(d, key; ordered_answers=[])
 	col = d[:,key]
-	dummy_cols = []
+    _split_col = split_ma.(col)
+    _appeared = _split_col |> skipmissing |> Iterators.flatten |> unique
+    appeared = filter(x -> x ≠ "" && !(ismissing(x)), _appeared)
 
     if length(ordered_answers) == 0
-        ordered_answers = col |> skipmissing |>
-        Itarators.flatten |> unique
+        ordered_answers = appeared
+    end
+
+    if setdiff(appeared, ordered_answers) ≠ []
+        throw(ArgumentError("Some input are missing from ordered_answers. Please check: $(setdiff(appeared, ordered_answers))"))
     end
 
     if length(ordered_answers) > length(unique(ordered_answers))
         throw(ArgumentError("Duplicate values detected. Please check: $(ordered_answers)"))
     end
 
+	dummy_cols = []
 	for ans ∈ ordered_answers
 		dummy = answers_to_dummy(ans, col)
 		push!(dummy_cols, dummy)
@@ -91,5 +105,17 @@ function onehot(d, key; ordered_answers=[])
 	DataFrame(dummy_cols, colnames)
 end
 
-export recode!
+function concatenate(x1::MaybeString, x2::MaybeString; delim::String=";")
+	if ismissing(x1) && ismissing(x2)
+		missing
+	elseif ismissing(x1)
+		x2
+	elseif ismissing(x2)
+		x1
+	else
+		x1*delim*x2
+	end
+end
+
+export recode!, onehot
 end
