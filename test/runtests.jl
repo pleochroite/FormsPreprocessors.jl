@@ -272,6 +272,8 @@ end
 
         @test_throws ArgumentError onehot(df_fruit_missing_empty(), :fruit;
             ordered_answers = ["apple", "lemon", "melon"])
+        @test_throws ArgumentError onehot(df_fruit_missing_empty(), :fruit;
+            ordered_answers = ["apple", "apple", "lemon", "melon", "orange"])
         @test_throws MethodError onehot(df_fruit_missing_empty(), :price; 
             ordered_answers = ord)
         @test_throws MethodError onehot(df_fruit_missing_empty(), :price;
