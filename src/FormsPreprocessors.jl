@@ -117,5 +117,5 @@ function concatenate(x1::MaybeString, x2::MaybeString; delim::String=";")
 	end
 end
 
-export recode!, onehot
+export recode!, onehot, concatenate
 end

@@ -282,19 +282,19 @@ end
     end
 
     @testset "concatenate" begin
-        @test FormsPreprocessors.concatenate("Apple", "Orange", delim=",") == "Apple,Orange"
-        @test FormsPreprocessors.concatenate("Apple", "Orange") == "Apple;Orange"
-        @test FormsPreprocessors.concatenate("Apple", missing, delim=",") == "Apple"
-        @test FormsPreprocessors.concatenate("Apple", missing) == "Apple"
-        @test FormsPreprocessors.concatenate(missing, "Orange", delim=",") == "Orange"
-        @test FormsPreprocessors.concatenate(missing, "Orange") == "Orange"
-        @test ismissing(FormsPreprocessors.concatenate(missing, missing; delim=","))
-        @test ismissing(FormsPreprocessors.concatenate(missing, missing))
-        @test FormsPreprocessors.concatenate("", "Orange"; delim=",") == ",Orange"
-        @test FormsPreprocessors.concatenate("Apple", ""; delim=",") == "Apple,"
-        @test FormsPreprocessors.concatenate("", ""; delim="@") == "@"
-        @test FormsPreprocessors.concatenate("蘋果", "芒果";delim="和") == "蘋果和芒果"
-        @test FormsPreprocessors.concatenate("蘋果", "芒果";delim="纊") == "蘋果纊芒果"
+        @test concatenate("Apple", "Orange", delim=",") == "Apple,Orange"
+        @test concatenate("Apple", "Orange") == "Apple;Orange"
+        @test concatenate("Apple", missing, delim=",") == "Apple"
+        @test concatenate("Apple", missing) == "Apple"
+        @test concatenate(missing, "Orange", delim=",") == "Orange"
+        @test concatenate(missing, "Orange") == "Orange"
+        @test ismissing(concatenate(missing, missing; delim=","))
+        @test ismissing(concatenate(missing, missing))
+        @test concatenate("", "Orange"; delim=",") == ",Orange"
+        @test concatenate("Apple", ""; delim=",") == "Apple,"
+        @test concatenate("", ""; delim="@") == "@"
+        @test concatenate("蘋果", "芒果";delim="和") == "蘋果和芒果"
+        @test concatenate("蘋果", "芒果";delim="纊") == "蘋果纊芒果"
 
     end
 
