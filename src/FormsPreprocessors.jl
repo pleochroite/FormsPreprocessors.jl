@@ -51,5 +51,9 @@ function recode!(df, key, vec_from::Vector{String}, vec_to::Union{Vector{Any}, V
     convert_answer!(df, key, renamer)
 end
 
-export apply_dict, convert_answer!, gen_conversion_dict, renaming_dict, recode!
+function split_ma(x, delim=";")
+    ismissing(x) ? missing : split(x,delim)
+end
+
+export recode!
 end
