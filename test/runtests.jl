@@ -134,10 +134,39 @@ end
     function df_fruit()
         DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
             "apple", "lemon;apple", "kiwi;melon", "kiwi;apple;orange"],
-            expense = [250, 890, 150, 240, 800, 350])
+            price = [250, 890, 150, 240, 800, 350])
     end
 
+    function df_fruit_missing()
+        DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
+            "apple", missing, "kiwi;melon", "kiwi;apple;orange"],
+        price = [250, 890, 150, missing, 800, 350])
+    end
 
+    function df_fruit_empty()
+        DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
+            "apple", "lemon;apple", "", "kiwi;apple;orange"],
+        price = [250, 890, 150, 150, 0, 350])
+    end
+
+    function df_fruit_missing_empty()
+        DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
+            "", "lemon;apple", missing, "kiwi;apple;orange"],
+        price = [250, 890, 0, 240, missing, 350])
+    end
+
+    @testset "answers_to_dummy" begin
+        @test FormsPreprocessors.answers_to_dummy("apple", df_fruit().fruit) == ["yes", "no", "yes", "yes", "no", "yes"]
+        @test_throws MethodError FormsPreprocessors.answers_to_dummy("orange", df_fruit().price)
+        @test_throws ArgumentError FormsPreprocessors.answers_to_dummy("kiwi", df_fruit().store)
+        @test isequal(FormsPreprocessors.answers_to_dummy("orange", df_fruit_missing().fruit), 
+            ["yes", "yes", "no", missing, "no", "yes"])
+        @test FormsPreprocessors.answers_to_dummy("kiwi", df_fruit_empty().fruit) == 
+            ["no", "no", "no", "no", "no", "yes"]
+        @test isequal(FormsPreprocessors.answers_to_dummy("orange", df_fruit_missing_empty().fruit), 
+            ["yes", "yes", "no", "no", missing, "yes"])
+        @test_throws MethodError FormsPreprocessors.answers_to_dummy("apple", [["apple"], "apple"])
+    end
 
 
 
