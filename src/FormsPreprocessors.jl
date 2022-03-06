@@ -18,7 +18,7 @@ function apply_dict(dict, x::MaybeString)
 end
 
 
-function convert_answer!(df, key, dict)
+function convert_answer!(df::DataFrame, key, dict)
     @transform!(df, $key = map(x -> apply_dict(dict, x), $key))
 end
 

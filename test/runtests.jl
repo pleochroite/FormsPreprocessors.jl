@@ -106,6 +106,7 @@ end
         @test isequal(FormsPreprocessors.convert_answer!(df_multibyte(), :作品名, work_to_hiragana).作品名,
             ["はしれめろす", ["〔雨ニモマケズ〕", "銀河鉄道の夜"], 
             ["こころ", "吾輩は猫である", "ゆめじゅうや"], "らしょうもん", "山月記", missing])
+        @test_throws MethodError FormsPreprocessors.convert_answer!([[1 2]; [3 4]], :bt, bloodtype)
     end
 
     @testset "conversion_dict" begin
