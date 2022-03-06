@@ -3,15 +3,7 @@ using Revise, DataFrames, DataFramesMeta, Missings, Parameters, CSV
 
 const MaybeString = Union{Missing, String}
 
-function apply_dict(dict, x::Vector{String})
-    [apply_dict(dict, el) for el ∈ x]
-end
-
-function apply_dict(dict, x::Vector{MaybeString})
-    [apply_dict(dict, el) for el ∈ x]
-end
-
-function apply_dict(dict, x::Vector{Missing})
+function apply_dict(dict, x::Vector{T} where T <: MaybeString)
     [apply_dict(dict, el) for el ∈ x]
 end
 
@@ -41,7 +33,9 @@ function conversion_dict(vec1, vec2)
     Dict([val1 => val2 for (val1, val2) ∈ zip(vec1, vec2)])
 end
 
-function renaming_dict(vec1::Vector{String}, vec2::Union{Vector{Any}, Vector{String}} = [], other = "other")
+const StringOrEmptyVector = Union{Vector{Any}, Vector{String}}
+
+function renaming_dict(vec1::Vector{String}, vec2::T where T <: StringOrEmptyVector = [], other = "other")
     n = length(vec1) - length(vec2)
     if n < 0
         throw(error("Key vector is shorter than value vector."))
@@ -53,12 +47,12 @@ function renaming_dict(vec1::Vector{String}, vec2::Union{Vector{Any}, Vector{Str
     conversion_dict(vec1, v)
 end
 
-function recode!(df, key, vec_from::Vector{String}, vec_to::Union{Vector{Any}, Vector{String}}=[], other="other")
+function recode!(df, key, vec_from::Vector{String}, vec_to::T where T <: StringOrEmptyVector=[], other="other")
     renamer = renaming_dict(vec_from, vec_to, other)
     convert_answer!(df, key, renamer)
 end
 
-function split_ma(x, delim=";")
+function split_ma(x::T where T <: MaybeString, delim=";")
     ismissing(x) ? missing : split(x,delim)
 end
 
