@@ -2,6 +2,8 @@ module FormsPreprocessors
 using Revise, DataFrames, DataFramesMeta, Missings, Parameters, CSV
 
 const MaybeString = Union{Missing, String}
+const MaybeReal = Union{Missing, Real}
+const StringOrEmptyVector = Union{Vector{Any}, Vector{String}}
 
 function apply_dict(dict, x::Vector{T} where T <: MaybeString)
     [apply_dict(dict, el) for el ∈ x]
@@ -17,7 +19,6 @@ function apply_dict(dict, x::MaybeString)
     end
 end
 
-
 function convert_answer!(df::DataFrame, key, dict)
     @transform!(df, $key = map(x -> apply_dict(dict, x), $key))
 end
@@ -32,8 +33,6 @@ function conversion_dict(vec1, vec2)
     end
     Dict([val1 => val2 for (val1, val2) ∈ zip(vec1, vec2)])
 end
-
-const StringOrEmptyVector = Union{Vector{Any}, Vector{String}}
 
 function renaming_dict(vec1::Vector{String}, vec2::T where T <: StringOrEmptyVector = [], other = "other")
     n = length(vec1) - length(vec2)
@@ -68,7 +67,6 @@ function answers_to_dummy(answer, col)
 	end
 	results
 end
-
 
 function onehot(d, key; ordered_answers=[])
 	col = d[:,key]
@@ -111,5 +109,69 @@ function concatenate(x1::MaybeString, x2::MaybeString; delim::String=";")
 	end
 end
 
-export recode!, onehot, concatenate
+function direct_product!(df, col1, col2, newcol; delim="_")
+    if newcol ∈ names(df)
+        throw(ArgumentError("New column name $(newcol) already exists in the dataframe."))
+    end
+
+    @transform!(df, @ByRow newcol = concatenate(col1, col2; delim=delim))
+end
+
+function discretize(df, col, thresholds::Vector{T} where T <: Real, 
+        newcol="$(String(col))_d";
+        newcodes=[])
+
+    if length(thresholds) > length(unique(thresholds))
+        throw(ArgumentError("Thresholds contain the same value."))
+    end
+
+    if newcol ∈ names(df)
+        throw(ArgumentError("New colname $(newcol) already exists in the dataframe."))
+    end
+
+    _thres = vcat(-Inf , sort(thresholds), Inf)
+    _ranges = [(_thres[i], _thres[i+1]) for i ∈ 1:length(_thres) - 1]
+
+    if newcodes == []
+        newcodes = ["$(r[1])-$(r[2])" for r ∈ _ranges]
+    end
+
+    if length(thresholds) + 1 ≠ length(newcodes)
+        throw(ArgumentError("Length of new codes mismatches."))
+    end
+    
+    r = [find_range(val, _ranges) for val ∈ df[:,col]]
+    _enc = map(x -> get_at(newcodes, x), r)
+    
+    result = hcat(df, _enc)
+    rename!(result, vcat(names(df), newcol))
+end
+
+function get_at(vec, i::Union{Missing, Int})
+    if ismissing(i)
+        missing
+    else
+        vec[i]
+    end
+end
+
+function falls_in(val::MaybeReal, range::Tuple{T, P} where {T <: Real, P <: Real})
+    if ismissing(val)
+        missing
+    else
+        range[1] ≤ val < range[2]
+    end
+end
+
+function find_range(val::MaybeReal, ranges::Vector{Tuple{T, P}} where {T <: Real, P <: Real})
+    result = falls_in.(val, ranges)
+    if all(x -> ismissing(x), result)
+        missing
+    else  
+        findfirst(result)
+    end
+end
+
+
+export recode!, onehot, concatenate, discretize
 end
