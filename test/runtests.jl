@@ -296,8 +296,108 @@ end
         @test concatenate("", ""; delim="@") == "@"
         @test concatenate("蘋果", "芒果";delim="和") == "蘋果和芒果"
         @test concatenate("蘋果", "芒果";delim="纊") == "蘋果纊芒果"
-
     end
 
-    
+    function df_fruit_g()
+        DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
+                "apple", "lemon;apple", "kiwi;melon", "kiwi;apple;orange"],
+            price = [250, 890, 150, 240, 800, 350],
+            gender = ["male", "female", "male", "female", "male", "female"])
+    end
+
+    function df_fruit_empty_g()
+        DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
+            "apple", "lemon;apple", "", "kiwi;apple;orange"],
+        price = [250, 890, 150, 150, 0, 350],
+        gender = ["male", "female", "male", "female", "male", "female"])
+    end
+
+    function df_fruit_missing_g()
+        DataFrame(fruit = ["apple;orange", missing, "apple",
+            missing, "kiwi;melon", "kiwi;apple;orange"],
+        price = [250, 890, 150, missing, 800, 350],
+        gender = ["male", "female", "male", missing, missing, "female"])
+    end
+
+    function df_fruit_missing_empty_g()
+        DataFrame(fruit = ["apple;orange", missing, "",
+            "lemon;apple", missing, "kiwi;apple;orange"],
+        price = [250, 890, 0, 240, missing, 350],
+        gender = ["male", "female", "male", "female", missing, missing])
+    end
+
+    function df_fruit_multibyte_g()
+        DataFrame(果物 = ["りんご;みかん", missing, "",
+            "レモン;りんご", missing, "キウィ;りんご;みかん"],
+            価格 = [250, 890, 0, 240, missing, 350],
+            性別 = ["男性", "女性", "男性", missing, missing, "女性"])
+    end
+
+
+    @testset "direct_product" begin
+        @test direct_product(df_fruit_g(), :fruit, :gender, :newcol; delim=",").newcol ==
+            ["apple;orange,male", "orange;melon;lemon,female", "apple,male",
+            "lemon;apple,female", "kiwi;melon,male", "kiwi;apple;orange,female"]
+        @test direct_product(df_fruit_empty_g(), :fruit, :gender, :newcol; delim=",").newcol ==
+            ["apple;orange,male", "orange;melon;lemon,female", "apple,male",
+            "lemon;apple,female", ",male", "kiwi;apple;orange,female"]
+        @test isequal(direct_product(df_fruit_missing_g(), :fruit, :gender, :newcol; delim=",").newcol,
+            ["apple;orange,male", "female", "apple,male", missing, "kiwi;melon", "kiwi;apple;orange,female"])
+        @test isequal(direct_product(df_fruit_missing_empty_g(), :fruit, :gender, :newcol; delim=",").newcol,
+            ["apple;orange,male", "female", ",male", "lemon;apple,female", missing, "kiwi;apple;orange"])
+        @test isequal(direct_product(df_fruit_missing_empty_g(), :fruit, :gender, :newcol).newcol,
+            ["apple;orange_male", "female", "_male", "lemon;apple_female", missing, "kiwi;apple;orange"])      
+        @test isequal(direct_product(df_fruit_missing_empty_g(), :gender, :fruit, :newcol).newcol,
+            ["male_apple;orange", "female", "male_", "female_lemon;apple", missing, "kiwi;apple;orange"])
+        @test isequal(direct_product(df_fruit_multibyte_g(), :果物, :性別, :新変数).新変数,
+            ["りんご;みかん_男性", "女性", "_男性", "レモン;りんご", missing, "キウィ;りんご;みかん_女性"])
+
+        @test_throws ArgumentError direct_product(df_fruit_missing_empty_g(), :gender, :gender, :double)
+        @test_throws ArgumentError direct_product(df_fruit_g(), :fruit, :gender, :gender)
+    end
+
+    @testset "get_at" begin
+        v = ["A", "B", "C", "D", "E"]
+        @test FormsPreprocessors.get_at(v, 2) == "B"
+        @test ismissing(FormsPreprocessors.get_at(v, missing))
+        @test_throws BoundsError FormsPreprocessors.get_at(v, 6)
+        @test_throws BoundsError FormsPreprocessors.get_at(v, 0)
+
+        vm = [:A, :B, missing, :D]
+        @test FormsPreprocessors.get_at(vm, 4) == :D
+        @test ismissing(FormsPreprocessors.get_at(vm, 3))
+        @test_throws BoundsError FormsPreprocessors.get_at(vm, 5)
+        @test ismissing(FormsPreprocessors.get_at(vm, missing))
+    end
+
+    ranges = [(-Inf, 0), (0, 1), (1, 5//3), (5//3, 3.4), (3.4, 5), (5, Inf)]
+
+    @testset "falls_in" begin
+        @test FormsPreprocessors.falls_in(-1, ranges[1])
+        @test !(FormsPreprocessors.falls_in(0, ranges[1]))
+        @test FormsPreprocessors.falls_in(0, ranges[2])
+        @test FormsPreprocessors.falls_in(3.45, ranges[5])
+
+        @test FormsPreprocessors.falls_in(1.6666666666666666, ranges[3])
+        @test FormsPreprocessors.falls_in(1.6666666666666667, ranges[4])
+        @test FormsPreprocessors.falls_in(-Inf, ranges[1])
+        @test FormsPreprocessors.falls_in(Inf, ranges[end])
+    end
+
+    @testset "find_range" begin
+        @test FormsPreprocessors.find_range(-1, ranges) == 1
+        @test FormsPreprocessors.find_range(0, ranges) == 2
+        @test FormsPreprocessors.find_range(3.45, ranges) == 5
+        @test FormsPreprocessors.find_range(5e4, ranges) == 6
+        @test FormsPreprocessors.find_range(5//3, ranges) == 4
+
+        @test ismissing(FormsPreprocessors.find_range(missing, ranges))
+        @test FormsPreprocessors.find_range(-Inf, ranges) == 1
+        @test FormsPreprocessors.find_range(Inf, ranges) == 6
+    end
+
+
+
+
+
 end

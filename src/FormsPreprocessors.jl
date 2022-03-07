@@ -109,12 +109,16 @@ function concatenate(x1::MaybeString, x2::MaybeString; delim::String=";")
 	end
 end
 
-function direct_product!(df, col1, col2, newcol; delim="_")
-    if newcol ∈ names(df)
+function direct_product(df::DataFrame, col1, col2, newcol; delim="_")
+
+    if col1 == col2
+        throw(ArgumentError("Passed identical columns."))
+    elseif newcol ∈ names(df)
         throw(ArgumentError("New column name $(newcol) already exists in the dataframe."))
     end
 
-    @transform!(df, @ByRow newcol = concatenate(col1, col2; delim=delim))
+    r = hcat(df, concatenate.(df[:,col1], df[:,col2]; delim=delim))
+    rename!(r, vcat(Symbol.(names(df)), newcol))
 end
 
 function discretize(df, col, thresholds::Vector{T} where T <: Real, 
@@ -148,16 +152,14 @@ function discretize(df, col, thresholds::Vector{T} where T <: Real,
 end
 
 function get_at(vec, i::Union{Missing, Int})
-    if ismissing(i)
-        missing
-    else
-        vec[i]
-    end
+    ismissing(i) ? missing : vec[i]
 end
 
 function falls_in(val::MaybeReal, range::Tuple{T, P} where {T <: Real, P <: Real})
     if ismissing(val)
         missing
+    elseif range[2] == Inf
+        range[1] ≤ val ≤ range[2]
     else
         range[1] ≤ val < range[2]
     end
@@ -173,5 +175,5 @@ function find_range(val::MaybeReal, ranges::Vector{Tuple{T, P}} where {T <: Real
 end
 
 
-export recode!, onehot, concatenate, discretize
+export recode!, onehot, concatenate, discretize, direct_product
 end
