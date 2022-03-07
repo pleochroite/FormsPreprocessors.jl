@@ -127,9 +127,7 @@ function discretize(df, col, thresholds::Vector{T} where T <: Real,
 
     if length(thresholds) > length(unique(thresholds))
         throw(ArgumentError("Thresholds contain the same value."))
-    end
-
-    if newcol ∈ names(df)
+    elseif newcol ∈ names(df)
         throw(ArgumentError("New colname $(newcol) already exists in the dataframe."))
     end
 
@@ -167,11 +165,7 @@ end
 
 function find_range(val::MaybeReal, ranges::Vector{Tuple{T, P}} where {T <: Real, P <: Real})
     result = falls_in.(val, ranges)
-    if all(x -> ismissing(x), result)
-        missing
-    else  
-        findfirst(result)
-    end
+    all(x -> ismissing(x), result) ? missing : findfirst(result)
 end
 
 

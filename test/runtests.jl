@@ -396,7 +396,32 @@ end
         @test FormsPreprocessors.find_range(Inf, ranges) == 6
     end
 
+    prices = [100, 200, 300, 500]
+    prices_perm = [500, 200, 100, 300]
+    @testset "discretize" begin
+        @test discretize(df_fruit(), :price, prices, "price_class";
+            newcodes=["N", "L", "M", "H", "VH"]).price_class ==
+            ["M", "VH", "L", "M", "VH", "H"]
+        @test discretize(df_fruit_empty(), :price, prices, "price_class";
+            newcodes=["N", "L", "M", "H", "VH"]).price_class ==
+            ["M", "VH", "L", "L", "N", "H"]
+        @test isequal(discretize(df_fruit_missing(), :price, prices, "price_class";
+            newcodes=["N", "L", "M", "H", "VH"]).price_class, 
+            ["M", "VH", "L", missing, "VH", "H"])
+        @test isequal(discretize(df_fruit_missing_empty(), :price, prices, "price_class";
+            newcodes=["N", "L", "M", "H", "VH"]).price_class, 
+            ["M", "VH", "N", "M", missing, "H"])
+        @test isequal(discretize(df_fruit_missing_empty(), :price, prices_perm), 
+            discretize(df_fruit_missing_empty(), :price, prices))
+        
+        @test isequal(discretize(df_fruit_multibyte(), :価格, prices, "価格区分";
+            newcodes = ["無", "低", "中", "高", "超高"]).価格区分,
+            ["中", "超高", "無", "中", missing, "高"])
 
+        @test_throws ArgumentError discretize(df_fruit(), :price, [100, 200, 300, 200, 500])
+        @test_throws ArgumentError discretize(df_fruit(), :price, prices, "fruit")
+        @test_throws ArgumentError discretize(df_fruit(), :price, prices; newcodes=["N", "L", "M", "H"])
+    end
 
 
 
