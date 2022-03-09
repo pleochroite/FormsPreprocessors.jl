@@ -46,7 +46,8 @@ function renaming_dict(vec1::Vector{String}, vec2::T where T <: StringOrEmptyVec
     conversion_dict(vec1, v)
 end
 
-function recode!(df, key, vec_from::Vector{String}, vec_to::T where T <: StringOrEmptyVector=[], other="other")
+function recode!(df::DataFrame, key, 
+    vec_from::Vector{String}, vec_to::T where T <: StringOrEmptyVector=[], other="other")
     renamer = renaming_dict(vec_from, vec_to, other)
     convert_answer!(df, key, renamer)
 end
@@ -68,8 +69,8 @@ function answers_to_dummy(answer, col)
 	results
 end
 
-function onehot(d, key; ordered_answers=[])
-	col = d[:,key]
+function onehot(df::DataFrame, key; ordered_answers=[])
+	col = df[:,key]
     _split_col = split_ma.(col)
     _appeared = _split_col |> skipmissing |> Iterators.flatten |> unique
     appeared = filter(x -> x ≠ "" && !(ismissing(x)), _appeared)
@@ -117,11 +118,11 @@ function direct_product(df::DataFrame, col1, col2, newcol; delim="_")
         throw(ArgumentError("New column name $(newcol) already exists in the dataframe."))
     end
 
-    r = hcat(df, concatenate.(df[:,col1], df[:,col2]; delim=delim))
+    r = hcat(df, DataFrame(cat = concatenate.(df[:,col1], df[:,col2]; delim=delim)))
     rename!(r, vcat(Symbol.(names(df)), newcol))
 end
 
-function discretize(df, col, thresholds::Vector{T} where T <: Real, 
+function discretize(df::DataFrame, col, thresholds::Vector{T} where T <: Real, 
         newcol="$(String(col))_d";
         newcodes=[])
 
@@ -143,7 +144,7 @@ function discretize(df, col, thresholds::Vector{T} where T <: Real,
     end
     
     r = [find_range(val, _ranges) for val ∈ df[:,col]]
-    _enc = map(x -> get_at(newcodes, x), r)
+    _enc = DataFrame(x = map(x -> get_at(newcodes, x), r))
     
     result = hcat(df, _enc)
     rename!(result, vcat(names(df), newcol))
