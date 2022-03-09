@@ -194,12 +194,12 @@ end
 
 
     function df_matrix()
-        DataFrame(id = [1, 2, 3, 4, 5], q1 = ["1st", "2nd", "3rd", "2nd", "5th"],
+        DataFrame(q1 = ["1st", "2nd", "3rd", "2nd", "5th"],
             q2 = ["2nd", "3rd", "4th", "4th", "2nd"])
     end
 
     function df_matrix_missing()
-        DataFrame(id = [1, 2, 3, 4, 5], q1 = ["1st", missing, "3rd", "2nd", "5th"],
+        DataFrame(q1 = ["1st", missing, "3rd", "2nd", "5th"],
             q2 = ["2nd", "3rd", missing, "4th", "2nd"])
     end
 
@@ -213,6 +213,7 @@ end
         @test isequal(recode_matrix(df_matrix_missing(), [:q1, :q2], v_from, v_to; prefix = "box"),
             DataFrame(box_q1 = ["top2", missing, "other", "top2", "bottom2"],
                 box_q2 = ["top2", "other", missing, "bottom2", "top2"]))
+        @test_throws ArgumentError recode_matrix(rename!(df_matrix_missing(), [:q1, :r_q1]), [:q1, :r_q1] ,v_from, v_to)
     end
 
     sent = "abc;def;ghi;jklm"

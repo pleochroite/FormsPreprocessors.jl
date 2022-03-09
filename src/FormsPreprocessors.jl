@@ -68,6 +68,13 @@ function recode_matrix(df::DataFrame, keys::Vector{Symbol},
     vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [], other = "other";
     prefix = "r")
 
+    newcolnames = "$(prefix)" .* "_" .* String.(keys)
+    colliding_names = intersect(names(df), newcolnames)
+    
+    if colliding_names ≠ []
+        throw(ArgumentError("New column name already exists in the dataframe."))
+    end
+
     renamer = renaming_dict(vec_from, vec_to, other)
 
     result = DataFrame()
