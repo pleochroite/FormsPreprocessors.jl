@@ -24,7 +24,8 @@ function convert_answer!(df::DataFrame, key, dict)
 end
 
 function convert_answer(df::DataFrame, key, newcol, dict)
-    @transform(df, $newcol = map(x -> apply_dict(dict, x), $key))
+    _r = map(x -> apply_dict(dict, x), df[:,key])
+    rename!(DataFrame(x1 = _r), [newcol])
 end
 
 function conversion_dict(vec1, vec2)

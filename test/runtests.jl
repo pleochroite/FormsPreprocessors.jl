@@ -110,7 +110,6 @@ end
     end
 
     @testset "convert_answer" begin
-        @test size(FormsPreprocessors.convert_answer(df(), :bt, :newbt, bloodtype)) == (7, 3)
         @test isequal(FormsPreprocessors.convert_answer(df_missing(), :bt, :newbt, bloodtype).newbt, ["1", "1", "3", "4", "2", missing, "2", "C", missing])
         @test isequal(FormsPreprocessors.convert_answer(df_nest_missing(), :bt, :newbt, bloodtype).newbt,
             df_nest_m_cv.bt)
