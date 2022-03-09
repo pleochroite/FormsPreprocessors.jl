@@ -175,11 +175,9 @@ function discretize(df::DataFrame, col, thresholds::Vector{T} where {T<:Real},
         throw(ArgumentError("Length of new codes mismatches."))
     end
 
-    r = [find_range(val, _ranges) for val ∈ df[:, col]]
-    _enc = DataFrame(x = map(x -> get_at(newcodes, x), r))
-
-    result = hcat(df, _enc)
-    rename!(result, vcat(names(df), newcol))
+    _r = [find_range(val, _ranges) for val ∈ df[:, col]]
+    result = DataFrame(x = map(x -> get_at(newcodes, x), _r))
+    rename!(result, [newcol])
 end
 
 function get_at(vec, i::Union{Missing,Int})
