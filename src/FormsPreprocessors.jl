@@ -146,12 +146,12 @@ function direct_product(df::DataFrame, col1, col2, newcol; delim = "_")
 
     if col1 == col2
         throw(ArgumentError("Passed identical columns."))
-    elseif newcol ∈ names(df)
+    elseif String(newcol) ∈ names(df)
         throw(ArgumentError("New column name $(newcol) already exists in the dataframe."))
     end
 
-    r = hcat(df, DataFrame(cat = concatenate.(df[:, col1], df[:, col2]; delim = delim)))
-    rename!(r, vcat(Symbol.(names(df)), newcol))
+    r = DataFrame(cat = concatenate.(df[:, col1], df[:, col2]; delim = delim))
+    rename!(r, [newcol])
 end
 
 function discretize(df::DataFrame, col, thresholds::Vector{T} where {T<:Real},
