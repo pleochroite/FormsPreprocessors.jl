@@ -62,6 +62,27 @@ function recode(df::DataFrame, key, newkey,
     convert_answer(df, key, newkey, renamer)
 end
 
+
+#function recode_matrix(df::DataFrame, keys::Vector{Symbol},
+#    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [], other = "other";
+#    prefix="r")
+
+#    renamer = renaming_dict(vec_from, vec_to, other)
+
+#    result = []
+#    for key ∈ keys
+#        converted = convert_answer(df, key, Symbol("$(prefix)_$(String(key))"), renamer)
+#        push!(result, converted)
+#    end
+
+
+
+
+#end
+
+
+
+
 function split_ma(x::T where {T<:MaybeString}, delim = ";")
     ismissing(x) ? missing : split(x, delim)
 end
@@ -180,5 +201,5 @@ function find_range(val::MaybeReal, ranges::Vector{Tuple{T,P}} where {T<:Real,P<
 end
 
 
-export recode!, recode, onehot, concatenate, discretize, direct_product
+export recode!, recode, recode_matrix, onehot, concatenate, discretize, direct_product
 end
