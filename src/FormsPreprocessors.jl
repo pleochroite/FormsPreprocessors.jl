@@ -24,7 +24,7 @@ function convert_answer!(df::DataFrame, key, dict)
 end
 
 function convert_answer(df::DataFrame, key, newcol, dict)
-    _r = map(x -> apply_dict(dict, x), df[:,key])
+    _r = map(x -> apply_dict(dict, x), df[:, key])
     rename!(DataFrame(x1 = _r), [newcol])
 end
 
@@ -64,24 +64,20 @@ function recode(df::DataFrame, key, newkey,
 end
 
 
-#function recode_matrix(df::DataFrame, keys::Vector{Symbol},
-#    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [], other = "other";
-#    prefix="r")
+function recode_matrix(df::DataFrame, keys::Vector{Symbol},
+    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [], other = "other";
+    prefix = "r")
 
-#    renamer = renaming_dict(vec_from, vec_to, other)
+    renamer = renaming_dict(vec_from, vec_to, other)
 
-#    result = []
-#    for key ∈ keys
-#        converted = convert_answer(df, key, Symbol("$(prefix)_$(String(key))"), renamer)
-#        push!(result, converted)
-#    end
+    result = DataFrame()
+    for key ∈ keys
+        converted = convert_answer(df, key, Symbol("$(prefix)_$(String(key))"), renamer)
+        result = hcat(result, converted)
+    end
 
-
-
-
-#end
-
-
+    result
+end
 
 
 function split_ma(x::T where {T<:MaybeString}, delim = ";")
