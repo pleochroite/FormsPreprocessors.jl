@@ -109,6 +109,19 @@ end
         @test_throws MethodError FormsPreprocessors.convert_answer!([[1 2]; [3 4]], :bt, bloodtype)
     end
 
+    @testset "convert_answer" begin
+        @test size(FormsPreprocessors.convert_answer(df(), :bt, :newbt, bloodtype)) == (7, 3)
+        @test isequal(FormsPreprocessors.convert_answer(df_missing(), :bt, :newbt, bloodtype).newbt, ["1", "1", "3", "4", "2", missing, "2", "C", missing])
+        @test isequal(FormsPreprocessors.convert_answer(df_nest_missing(), :bt, :newbt, bloodtype).newbt,
+            df_nest_m_cv.bt)
+        @test isequal(FormsPreprocessors.convert_answer(df_multibyte(), :作家名, :作家名よみがな, name_to_hiragana).作家名よみがな, 
+            name_hiragana)
+        @test isequal(FormsPreprocessors.convert_answer(df_multibyte(), :作品名, :作品名よみがな, work_to_hiragana).作品名よみがな,
+            ["はしれめろす", ["〔雨ニモマケズ〕", "銀河鉄道の夜"], 
+            ["こころ", "吾輩は猫である", "ゆめじゅうや"], "らしょうもん", "山月記", missing])
+        @test_throws MethodError FormsPreprocessors.convert_answer([[1 2]; [3 4]], :bt, :newbt, bloodtype)
+    end
+
     @testset "conversion_dict" begin
         @test typeof(FormsPreprocessors.conversion_dict(ks, vs)) == Dict{String, String}
         @test FormsPreprocessors.conversion_dict(ks, vs) == bloodtype
@@ -158,6 +171,24 @@ end
         # testing multibyte data
         @test recode!(df_multibyte(), :作家名, name_kanji, name_hiragana).作家名 == name_hiragana
         @test isequal(recode!(df_multibyte(), :作品名, work_kanji, work_hiragana[1:2], "その他").作品名, 
+            ["はしれめろす", ["〔雨ニモマケズ〕", "銀河鉄道の夜"],
+            ["こころ", "吾輩は猫である", "ゆめじゅうや"], "その他", "山月記", missing])
+    end
+
+    @testset "recode" begin
+        @test recode(df(), :bt, :newkey, ks, vs).newkey == df_cv.bt
+        @test isequal(recode(df_nest_missing(), :bt, :newkey, ks, vs).newkey, df_nest_m_cv.bt)
+        @test isequal(recode(df_nest_missing(), :bt, :newkey, ks, vs[1:3]).newkey,
+            ["1", ["1", "M"], "3", ["other", missing, "2"], "K", missing, "C"])
+        @test isequal(recode(df_nest_missing(), :bt, :newkey, ks).newkey, 
+            ["other", ["other", "M"], "other", ["other", missing, "other"], "K", missing, "C"])
+        
+        @test recode(df(), :bt, :newkey, ks, vs[1:3], "no answer").newkey ==
+            ["1", "1", "3", "no answer", "2", "2", "C"]
+
+        # testing multibyte data
+        @test recode(df_multibyte(), :作家名, :作家名よみがな, name_kanji, name_hiragana).作家名よみがな == name_hiragana
+        @test isequal(recode(df_multibyte(), :作品名, :作品名よみがな, work_kanji, work_hiragana[1:2], "その他").作品名よみがな, 
             ["はしれめろす", ["〔雨ニモマケズ〕", "銀河鉄道の夜"],
             ["こころ", "吾輩は猫である", "ゆめじゅうや"], "その他", "山月記", missing])
     end

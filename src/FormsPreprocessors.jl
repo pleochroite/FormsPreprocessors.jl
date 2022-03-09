@@ -23,6 +23,10 @@ function convert_answer!(df::DataFrame, key, dict)
     @transform!(df, $key = map(x -> apply_dict(dict, x), $key))
 end
 
+function convert_answer(df::DataFrame, key, newcol, dict)
+    @transform(df, $newcol = map(x -> apply_dict(dict, x), $key))
+end
+
 function conversion_dict(vec1, vec2)
     if length(vec1) > length(unique(vec1))
         throw(error("Some keys appear multiple times. $(vec1)"))
@@ -50,6 +54,12 @@ function recode!(df::DataFrame, key,
     vec_from::Vector{String}, vec_to::T where T <: StringOrEmptyVector=[], other="other")
     renamer = renaming_dict(vec_from, vec_to, other)
     convert_answer!(df, key, renamer)
+end
+
+function recode(df::DataFrame, key, newkey,
+    vec_from::Vector{String}, vec_to::T where T <: StringOrEmptyVector=[], other="other")
+    renamer = renaming_dict(vec_from, vec_to, other)
+    convert_answer(df, key, newkey, renamer)
 end
 
 function split_ma(x::T where T <: MaybeString, delim=";")
@@ -170,5 +180,5 @@ function find_range(val::MaybeReal, ranges::Vector{Tuple{T, P}} where {T <: Real
 end
 
 
-export recode!, onehot, concatenate, discretize, direct_product
+export recode!, recode, onehot, concatenate, discretize, direct_product
 end
