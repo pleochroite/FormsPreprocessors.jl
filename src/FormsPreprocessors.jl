@@ -160,7 +160,7 @@ function direct_product(df::DataFrame, col1, col2, newcol, replace=false; delim 
     end
 
     r = DataFrame(cat = concatenate.(df[:, col1], df[:, col2]; delim = delim))
-    rename!(r, [newcol])
+    return hcat(df, rename!(r, [newcol]))
 end
 
 function discretize(df::DataFrame, col, thresholds::Vector{T} where {T<:Real},
