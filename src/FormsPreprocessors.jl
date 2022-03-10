@@ -52,21 +52,25 @@ function renaming_dict(vec1::Vector{String}, vec2::T where {T<:StringOrEmptyVect
 end
 
 function recode!(df::DataFrame, key,
-    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [], other = "other")
+    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [],
+    replace=false; other = "other")
     renamer = renaming_dict(vec_from, vec_to, other)
     convert_answer!(df, key, renamer)
 end
 
 function recode(df::DataFrame, key, newkey,
-    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [], other = "other")
+    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [],
+    replace=false; other = "other")
     renamer = renaming_dict(vec_from, vec_to, other)
-    convert_answer(df, key, newkey, renamer)
+    result = convert_answer(df, key, newkey, renamer)
+
+    return hcat(df, result)
 end
 
 
 function recode_matrix(df::DataFrame, keys::Vector{Symbol},
-    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [], other = "other";
-    prefix = "r")
+    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [],
+    replace=false; other = "other", prefix = "r")
 
     newcolnames = "$(prefix)" .* "_" .* String.(keys)
     colliding_names = intersect(names(df), newcolnames)
@@ -83,7 +87,7 @@ function recode_matrix(df::DataFrame, keys::Vector{Symbol},
         result = hcat(result, converted)
     end
 
-    result
+    return hcat(df, result)
 end
 
 
@@ -104,7 +108,7 @@ function answers_to_dummy(answer, col)
     results
 end
 
-function onehot(df::DataFrame, key; ordered_answers = [])
+function onehot(df::DataFrame, key, replace=false; ordered_answers = [])
     col = df[:, key]
     _split_col = split_ma.(col)
     _appeared = _split_col |> skipmissing |> Iterators.flatten |> unique
@@ -145,7 +149,7 @@ function concatenate(x1::MaybeString, x2::MaybeString; delim::String = ";")
     end
 end
 
-function direct_product(df::DataFrame, col1, col2, newcol; delim = "_")
+function direct_product(df::DataFrame, col1, col2, newcol, replace=false; delim = "_")
 
     if col1 == col2
         throw(ArgumentError("Passed identical columns."))
@@ -158,7 +162,7 @@ function direct_product(df::DataFrame, col1, col2, newcol; delim = "_")
 end
 
 function discretize(df::DataFrame, col, thresholds::Vector{T} where {T<:Real},
-    newcol = "$(String(col))_d";
+    newcol = "$(String(col))_d", replace=false;
     newcodes = [])
 
     if length(thresholds) > length(unique(thresholds))

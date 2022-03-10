@@ -165,16 +165,17 @@ end
         @test isequal(recode!(df_nest_missing(), :bt, ks).bt,
             ["other", ["other", "M"], "other", ["other", missing, "other"], "K", missing, "C"])
 
-        @test recode!(df(), :bt, ks, vs[1:3], "no answer").bt == ["1", "1", "3", "no answer", "2", "2", "C"]
+        @test recode!(df(), :bt, ks, vs[1:3]; other = "no answer").bt == ["1", "1", "3", "no answer", "2", "2", "C"]
 
         # testing multibyte data
         @test recode!(df_multibyte(), :作家名, name_kanji, name_hiragana).作家名 == name_hiragana
-        @test isequal(recode!(df_multibyte(), :作品名, work_kanji, work_hiragana[1:2], "その他").作品名,
+        @test isequal(recode!(df_multibyte(), :作品名, work_kanji, work_hiragana[1:2]; other = "その他").作品名,
             ["はしれめろす", ["〔雨ニモマケズ〕", "銀河鉄道の夜"],
                 ["こころ", "吾輩は猫である", "ゆめじゅうや"], "その他", "山月記", missing])
     end
 
     @testset "recode" begin
+        @test size(recode(df(), :bt, :newkey, ks, vs)) == (7,3)
         @test recode(df(), :bt, :newkey, ks, vs).newkey == df_cv.bt
         @test isequal(recode(df_nest_missing(), :bt, :newkey, ks, vs).newkey, df_nest_m_cv.bt)
         @test isequal(recode(df_nest_missing(), :bt, :newkey, ks, vs[1:3]).newkey,
@@ -182,12 +183,12 @@ end
         @test isequal(recode(df_nest_missing(), :bt, :newkey, ks).newkey,
             ["other", ["other", "M"], "other", ["other", missing, "other"], "K", missing, "C"])
 
-        @test recode(df(), :bt, :newkey, ks, vs[1:3], "no answer").newkey ==
+        @test recode(df(), :bt, :newkey, ks, vs[1:3]; other = "no answer").newkey ==
               ["1", "1", "3", "no answer", "2", "2", "C"]
 
         # testing multibyte data
         @test recode(df_multibyte(), :作家名, :作家名よみがな, name_kanji, name_hiragana).作家名よみがな == name_hiragana
-        @test isequal(recode(df_multibyte(), :作品名, :作品名よみがな, work_kanji, work_hiragana[1:2], "その他").作品名よみがな,
+        @test isequal(recode(df_multibyte(), :作品名, :作品名よみがな, work_kanji, work_hiragana[1:2], other = "その他").作品名よみがな,
             ["はしれめろす", ["〔雨ニモマケズ〕", "銀河鉄道の夜"],
                 ["こころ", "吾輩は猫である", "ゆめじゅうや"], "その他", "山月記", missing])
     end
@@ -207,13 +208,13 @@ end
     v_to = ["top2", "top2", "bottom2", "bottom2"]
 
     @testset "recode_matrix" begin
-        @test recode_matrix(df_matrix(), [:q1, :q2], v_from, v_to; prefix = "box") ==
+        @test recode_matrix(df_matrix(), [:q1, :q2], v_from, v_to; prefix = "box")[:,3:4] ==
               DataFrame(box_q1 = ["top2", "top2", "other", "top2", "bottom2"],
             box_q2 = ["top2", "other", "bottom2", "bottom2", "top2"])
-        @test isequal(recode_matrix(df_matrix_missing(), [:q1, :q2], v_from, v_to; prefix = "box"),
+        @test isequal(recode_matrix(df_matrix_missing(), [:q1, :q2], v_from, v_to; prefix = "box")[:,3:4],
             DataFrame(box_q1 = ["top2", missing, "other", "top2", "bottom2"],
                 box_q2 = ["top2", "other", missing, "bottom2", "top2"]))
-        @test_throws ArgumentError recode_matrix(rename!(df_matrix_missing(), [:q1, :r_q1]), [:q1, :r_q1] ,v_from, v_to)
+        @test_throws ArgumentError recode_matrix(rename!(df_matrix_missing(), [:q1, :r_q1]), [:q1, :r_q1], v_from, v_to)
     end
 
     sent = "abc;def;ghi;jklm"
