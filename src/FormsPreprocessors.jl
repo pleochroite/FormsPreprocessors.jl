@@ -19,17 +19,8 @@ function apply_dict(dict, x)
     end
 end
 
-function convert_answer!(df::DataFrame, key, dict)
-    @transform!(df, $key = map(x -> apply_dict(dict, x), $key))
-end
-
 function convert_answer(df::DataFrame, key, newcol, dict)
     _r = map(x -> apply_dict(dict, x), df[:, key])
-    rename!(DataFrame(x1 = _r), [newcol])
-end
-
-function convert_answer(col, newcol, dict)
-    _r = map(x -> apply_dict(dict, x), col)
     rename!(DataFrame(x1 = _r), [newcol])
 end
 
@@ -56,13 +47,6 @@ function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other 
     conversion_dict(vec1, v)
 end
 
-function recode!(df::DataFrame, key,
-    vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [],
-    replace=false; other = "other")
-    renamer = renaming_dict(vec_from, vec_to, other)
-    convert_answer!(df, key, renamer)
-end
-
 function recode(df::DataFrame, key, newkey,
     vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [],
     replace=false; other = "other")
@@ -71,16 +55,6 @@ function recode(df::DataFrame, key, newkey,
     result = convert_answer(df, key, newkey, renamer)
 
     return hcat(df, result)
-end
-
-function recode_col(col, newkey,
-    vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [],
-    replace=false; other = "other")
-
-    renamer = renaming_dict(vec_from, vec_to, other)
-    result = convert_answer(col, newkey, renamer)
-
-    return result
 end
 
 function recode_others(df::DataFrame, key, newkey,

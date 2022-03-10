@@ -93,22 +93,6 @@ end
         @test isequal(FormsPreprocessors.apply_dict(bloodtype, [missing, :id, 1]), [missing, :id, 1])
     end
 
-    @testset "convert_answer!" begin
-        @test size(FormsPreprocessors.convert_answer!(df(), :bt, bloodtype)) == (7, 2)
-        @test FormsPreprocessors.convert_answer!(df(), :bt, bloodtype).bt == ["1", "1", "3", "4", "2", "2", "C"]
-        @test FormsPreprocessors.convert_answer!(df(), :bt, bloodtype)[:, 2] == df()[:, 2]
-        @test FormsPreprocessors.convert_answer!(df(), :rh, bloodtype) == df()
-        @test isequal(FormsPreprocessors.convert_answer!(df_missing(), :bt, bloodtype).bt, ["1", "1", "3", "4", "2", missing, "2", "C", missing])
-        @test FormsPreprocessors.convert_answer!(df_nest(), :bt, bloodtype) == df_nest_cv
-        @test isequal(FormsPreprocessors.convert_answer!(df_nest_missing(), :bt, bloodtype), df_nest_m_cv)
-        @test isequal(FormsPreprocessors.convert_answer!(df_multibyte(), :作家名, name_to_hiragana).作家名,
-            name_hiragana)
-        @test isequal(FormsPreprocessors.convert_answer!(df_multibyte(), :作品名, work_to_hiragana).作品名,
-            ["はしれめろす", ["〔雨ニモマケズ〕", "銀河鉄道の夜"],
-                ["こころ", "吾輩は猫である", "ゆめじゅうや"], "らしょうもん", "山月記", missing])
-        @test_throws MethodError FormsPreprocessors.convert_answer!([[1 2]; [3 4]], :bt, bloodtype)
-    end
-
     @testset "convert_answer" begin
         @test isequal(FormsPreprocessors.convert_answer(df_missing(), :bt, :newbt, bloodtype).newbt, ["1", "1", "3", "4", "2", missing, "2", "C", missing])
         @test isequal(FormsPreprocessors.convert_answer(df_nest_missing(), :bt, :newbt, bloodtype).newbt,
@@ -150,28 +134,6 @@ end
 
         # testing multibyte vectors
         @test FormsPreprocessors.renaming_dict(name_kanji, name_hiragana) == name_to_hiragana
-    end
-
-    @testset "recode!" begin
-        @test FormsPreprocessors.recode!(df(), :bt, ks, vs) == df_cv
-        @test isequal(FormsPreprocessors.recode!(df_missing(), :bt, ks, vs), df_missing_cv)
-        @test FormsPreprocessors.recode!(df_nest(), :bt, ks, vs) == df_nest_cv
-        @test isequal(FormsPreprocessors.recode!(df_nest_missing(), :bt, ks, vs), df_nest_m_cv)
-        @test FormsPreprocessors.recode!(df(), :bt, ks, ["1", "2", "3"]).bt == ["1", "1", "3", "other", "2", "2", "C"]
-        @test isequal(FormsPreprocessors.recode!(df_missing(), :bt, ks, vs[1:3]).bt,
-            ["1", "1", "3", "other", "2", missing, "2", "C", missing])
-        @test isequal(FormsPreprocessors.recode!(df_nest_missing(), :bt, ks, vs[1:3]).bt,
-            ["1", ["1", "M"], "3", ["other", missing, "2"], "K", missing, "C"])
-        @test isequal(FormsPreprocessors.recode!(df_nest_missing(), :bt, ks).bt,
-            ["other", ["other", "M"], "other", ["other", missing, "other"], "K", missing, "C"])
-
-        @test FormsPreprocessors.recode!(df(), :bt, ks, vs[1:3]; other = "no answer").bt == ["1", "1", "3", "no answer", "2", "2", "C"]
-
-        # testing multibyte data
-        @test FormsPreprocessors.recode!(df_multibyte(), :作家名, name_kanji, name_hiragana).作家名 == name_hiragana
-        @test isequal(FormsPreprocessors.recode!(df_multibyte(), :作品名, work_kanji, work_hiragana[1:2]; other = "その他").作品名,
-            ["はしれめろす", ["〔雨ニモマケズ〕", "銀河鉄道の夜"],
-                ["こころ", "吾輩は猫である", "ゆめじゅうや"], "その他", "山月記", missing])
     end
 
     @testset "recode" begin
