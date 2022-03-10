@@ -5,7 +5,7 @@ const MaybeString = Union{Missing,String}
 const MaybeReal = Union{Missing,Real}
 const StringOrEmptyVector = Union{Vector{Any},Vector{String}}
 
-function apply_dict(dict, x::Vector{T} where {T<:MaybeString})
+function apply_dict(dict, x::AbstractVector)
     [apply_dict(dict, el) for el ∈ x]
 end
 
@@ -25,6 +25,11 @@ end
 
 function convert_answer(df::DataFrame, key, newcol, dict)
     _r = map(x -> apply_dict(dict, x), df[:, key])
+    rename!(DataFrame(x1 = _r), [newcol])
+end
+
+function convert_answer(col, newcol, dict)
+    _r = map(x -> apply_dict(dict, x), col)
     rename!(DataFrame(x1 = _r), [newcol])
 end
 
@@ -52,17 +57,15 @@ function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other 
 end
 
 function recode!(df::DataFrame, key,
-    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [],
+    vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [],
     replace=false; other = "other")
     renamer = renaming_dict(vec_from, vec_to, other)
     convert_answer!(df, key, renamer)
 end
 
 function recode(df::DataFrame, key, newkey,
-    vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [],
+    vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [],
     replace=false; other = "other")
-
-    _appeared = df[:,key] |> skipmissing |> unique      
 
     renamer = renaming_dict(vec_from, vec_to, other)
     result = convert_answer(df, key, newkey, renamer)
@@ -70,31 +73,48 @@ function recode(df::DataFrame, key, newkey,
     return hcat(df, result)
 end
 
+function recode_col(col, newkey,
+    vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [],
+    replace=false; other = "other")
+
+    renamer = renaming_dict(vec_from, vec_to, other)
+    result = convert_answer(col, newkey, renamer)
+
+    return result
+end
+
 function recode_others(df::DataFrame, key, newkey,
     regular_answers::Vector{String}, replace=false; other = "other")
-
-    _appeared = df[:,key] |> flat |> skipmissing |> unique
+    @show df[:,key]
+    _appeared = df[:,key] |> skipmissing |> Iterators.flatten |> collect |> unique
+    @show _appeared
     renamed_from = setdiff(_appeared, regular_answers)
+    @show renamed_from
+    #renamer = renaming_dict(renamed_from, [], other)
+    #result = convert_answer(df, key, newkey, renamer)
 
-    renamer = renaming_dict(renamed_from, [], other)
-    result = convert_answer(df, key, newkey, renamer)
-
-    return hcat(df, result)
+    #return hcat(df, result)
+    #target_col = df[:,key]
+    return recode(df, key, newkey, renamed_from, [], other)
+    #return hcat(df, result, makeunique=true)#, vcat(names(df), String(newkey)))
 end
 
-function flat(vec)
-    result = []
-    for v ∈ vec
-        if ismissing(v)
-            push!(result, missing)
-        elseif typeof(v) <: String
-            push!(result, v)
-        else
-            result = vcat(result, flat(v))
-        end
-    end
-    result
-end
+#function flat(vec)
+#    result = []
+#    for v ∈ vec
+#        if ismissing(v)
+#            push!(result, missing)
+#        elseif typeof(v) <: String
+#            push!(result, v)
+#        elseif typeof(v) <: Vector{Union{Missing, String}}
+#            @show v
+#            result = vcat(result, flat(v))
+#        else
+#            break
+#        end
+#    end
+#    result
+#end
 
 
 function recode_matrix(df::DataFrame, keys::Vector{Symbol},
@@ -120,9 +140,15 @@ function recode_matrix(df::DataFrame, keys::Vector{Symbol},
 end
 
 
-function split_ma(x::T where {T<:MaybeString}, delim = ";")
+function split_ma(x, delim = ";")
     ismissing(x) ? missing : split(x, delim)
 end
+
+function split_ma_col!(df::DataFrame, key)
+    return transform!(df, key => ByRow(x -> split_ma.(x, ";")) => key)
+end
+
+
 
 function answers_to_dummy(answer, col)
     results = []
