@@ -9,7 +9,7 @@ function apply_dict(dict, x::Vector{T} where {T<:MaybeString})
     [apply_dict(dict, el) for el ∈ x]
 end
 
-function apply_dict(dict, x::MaybeString)
+function apply_dict(dict, x)
     if ismissing(x)
         missing
     elseif x ∈ keys(dict)
@@ -61,7 +61,11 @@ end
 function recode(df::DataFrame, key, newkey,
     vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [],
     replace=false; other = "other")
+
+    _appeared = df[:,key] |> skipmissing |> unique      
+
     renamer = renaming_dict(vec_from, vec_to, other)
+    @show renamer
     result = convert_answer(df, key, newkey, renamer)
 
     return hcat(df, result)
