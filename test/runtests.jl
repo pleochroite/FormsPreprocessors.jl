@@ -223,48 +223,48 @@ end
     end
 
     function df_fruit()
-        DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
-                "apple", "lemon;apple", "kiwi;melon", "kiwi;apple;orange"],
+        DataFrame(fruit = [["apple","orange"], ["orange","melon","lemon"],
+                ["apple"], ["lemon","apple"], ["kiwi","melon"], ["kiwi","apple","orange"]],
             price = [250, 890, 150, 240, 800, 350])
     end
 
     function df_fruit_missing()
-        DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
-                "apple", missing, "kiwi;melon", "kiwi;apple;orange"],
+        DataFrame(fruit = [["apple","orange"], ["orange","melon","lemon"],
+                ["apple"], missing, ["kiwi","melon"], ["kiwi","apple","orange"]],
             price = [250, 890, 150, missing, 800, 350])
     end
 
     function df_fruit_empty()
-        DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
-                "apple", "lemon;apple", "", "kiwi;apple;orange"],
+        DataFrame(fruit = [["apple","orange"], ["orange","melon","lemon"],
+                ["apple"], ["lemon","apple"], [""], ["kiwi","apple","orange"]],
             price = [250, 890, 150, 150, 0, 350])
     end
 
     function df_fruit_missing_empty()
-        DataFrame(fruit = ["apple;orange", "orange;melon;lemon",
-                "", "lemon;apple", missing, "kiwi;apple;orange"],
+        DataFrame(fruit = [["apple","orange"], ["orange","melon","lemon"],
+                [""], ["lemon","apple"], missing, ["kiwi","apple","orange"]],
             price = [250, 890, 0, 240, missing, 350])
     end
 
     function df_fruit_multibyte()
-        DataFrame(果物 = ["りんご;みかん", "みかん;メロン;レモン",
-                "", "レモン;りんご", missing, "キウィ;りんご;みかん"],
+        DataFrame(果物 = [["りんご","みかん"], ["みかん","メロン","レモン"],
+                [""], ["レモン","りんご"], missing, ["キウィ","りんご","みかん"]],
             価格 = [250, 890, 0, 240, missing, 350])
     end
 
     @testset "answers_to_dummy" begin
         @test FormsPreprocessors.answers_to_dummy("apple", df_fruit().fruit) == ["yes", "no", "yes", "yes", "no", "yes"]
-        @test_throws MethodError FormsPreprocessors.answers_to_dummy("orange", df_fruit().price)
+        @test FormsPreprocessors.answers_to_dummy("orange", df_fruit().price) == 
+            ["no", "no", "no", "no", "no", "no"]
         @test_throws ArgumentError FormsPreprocessors.answers_to_dummy("kiwi", df_fruit().store)
         @test isequal(FormsPreprocessors.answers_to_dummy("orange", df_fruit_missing().fruit),
             ["yes", "yes", "no", missing, "no", "yes"])
         @test FormsPreprocessors.answers_to_dummy("kiwi", df_fruit_empty().fruit) ==
-              ["no", "no", "no", "no", "no", "yes"]
+            ["no", "no", "no", "no", "no", "yes"]
         @test isequal(FormsPreprocessors.answers_to_dummy("orange", df_fruit_missing_empty().fruit),
             ["yes", "yes", "no", "no", missing, "yes"])
         @test isequal(FormsPreprocessors.answers_to_dummy("みかん", df_fruit_multibyte().果物),
             ["yes", "yes", "no", "no", missing, "yes"])
-        @test_throws MethodError FormsPreprocessors.answers_to_dummy("apple", [["apple"], "apple"])
     end
 
     @testset "onehot" begin
@@ -303,7 +303,7 @@ end
             ordered_answers = ["みかん", "りんご", "レモン", "メロン", "キウィ", "あんず"])
         @test size(r_multibyte) == (6, 8)
         @test all(x -> ismissing(x), r_multibyte[5, 3:end])
-        @test collect(r_multibyte[1, :]) == ["りんご;みかん", 250, "yes", "yes", "no", "no", "no", "no"]
+        @test collect(r_multibyte[1, :]) == [["りんご","みかん"], 250, "yes", "yes", "no", "no", "no", "no"]
         @test all(x -> (x == "no"), r_multibyte[3, 3:end])
         @test isequal(r_multibyte[:, 8], ["no", "no", "no", "no", missing, "no"])
 
@@ -311,9 +311,9 @@ end
             ordered_answers = ["apple", "lemon", "melon"])
         @test_throws ArgumentError onehot(df_fruit_missing_empty(), :fruit;
             ordered_answers = ["apple", "apple", "lemon", "melon", "orange", "kiwi"])
-        @test_throws MethodError onehot(df_fruit_missing_empty(), :price;
+        @test_throws ArgumentError onehot(df_fruit_missing_empty(), :price;
             ordered_answers = ord)
-        @test_throws MethodError onehot(df_fruit_missing_empty(), :price;
+        @test_throws ArgumentError onehot(df_fruit_missing_empty(), :price;
             ordered_answers = [])
         @test_throws ArgumentError onehot(df_fruit_missing_empty(), :store)
     end

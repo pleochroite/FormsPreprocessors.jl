@@ -77,7 +77,8 @@ function flat(vec)
         elseif typeof(v) <: AbstractVector
             result = vcat(result, flat(v))
         else
-            @error "Oops, Something happened."
+            # ToDo: catch other possible scenarios
+            throw(ArgumentError("Flattening failed."))
         end
     end
     result
@@ -117,9 +118,9 @@ end
 
 
 
-function answers_to_dummy(answer, col)
+function answers_to_dummy_from_raw(answer, key)
     results = []
-    _split_col = split_ma.(col)
+    _split_col = split_ma.(key)
     for cell ∈ _split_col
         if ismissing(cell)
             push!(results, missing)
@@ -130,10 +131,55 @@ function answers_to_dummy(answer, col)
     results
 end
 
-function onehot(df::DataFrame, key, replace=false; ordered_answers = [])
-    col = df[:, key]
-    _split_col = split_ma.(col)
+function onehot_from_raw(df::DataFrame, key, replace=false; ordered_answers = [])
+    key = df[:, key]
+    _split_col = split_ma.(key)
     _appeared = _split_col |> skipmissing |> Iterators.flatten |> unique
+    appeared = filter(x -> x ≠ "" && !(ismissing(x)), _appeared)
+
+    if length(ordered_answers) == 0
+        ordered_answers = appeared
+    end
+
+    if setdiff(appeared, ordered_answers) ≠ []
+        throw(ArgumentError("Some input are missing from ordered_answers. Please check: $(setdiff(appeared, ordered_answers))"))
+    end
+
+    if length(ordered_answers) > length(unique(ordered_answers))
+        throw(ArgumentError("Duplicate values detected. Please check: $(ordered_answers)"))
+    end
+
+    dummy_cols = []
+    for ans ∈ ordered_answers
+        dummy = answers_to_dummy_from_raw(ans, key)
+        push!(dummy_cols, dummy)
+    end
+
+    prefix = String(key)
+    colnames = prefix .* "_" .* ordered_answers
+    result = DataFrame(dummy_cols, colnames)
+    
+    return hcat(df, result)
+end
+
+
+function answers_to_dummy(answer, col)
+    results = []
+    for cell ∈ col
+        if ismissing(cell)
+            push!(results, missing)
+        else
+            push!(results, answer ∈ cell ? "yes" : "no")
+        end
+    end
+    results
+end
+
+
+function onehot(df::DataFrame, key, replace=false; ordered_answers = [])
+    
+    col = collect(df[!, key])
+    _appeared = col |> flat |> skipmissing |> unique
     appeared = filter(x -> x ≠ "" && !(ismissing(x)), _appeared)
 
     if length(ordered_answers) == 0
@@ -161,7 +207,8 @@ function onehot(df::DataFrame, key, replace=false; ordered_answers = [])
     return hcat(df, result)
 end
 
-function concatenate(x1::MaybeString, x2::MaybeString; delim::String = ";")
+
+function concatenate(x1, x2; delim::String = ";")
     if ismissing(x1) && ismissing(x2)
         missing
     elseif ismissing(x1)
@@ -184,8 +231,8 @@ function direct_product(df::DataFrame, col1, col2, newcol, replace=false; delim 
     return hcat(df, rename!(r, [newcol]))
 end
 
-function discretize(df::DataFrame, col, thresholds::Vector{T} where {T<:Real},
-    newcol = "$(String(col))_d", replace=false;
+function discretize(df::DataFrame, key, thresholds::Vector{T} where {T<:Real},
+    newcol = "class_$(String(key))", replace=false;
     newcodes = [])
 
     if length(thresholds) > length(unique(thresholds))
@@ -205,7 +252,7 @@ function discretize(df::DataFrame, col, thresholds::Vector{T} where {T<:Real},
         throw(ArgumentError("Length of new codes mismatches."))
     end
 
-    _r = [find_range(val, _ranges) for val ∈ df[:, col]]
+    _r = [find_range(val, _ranges) for val ∈ df[:, key]]
     result = DataFrame(x = map(x -> get_at(newcodes, x), _r))
     return hcat(df, rename!(result, [newcol]))
 end
@@ -230,5 +277,5 @@ function find_range(val::MaybeReal, ranges::Vector{Tuple{T,P}} where {T<:Real,P<
 end
 
 
-export recode, recode_matrix, recode_others, onehot, discretize, direct_product
+export split_ma_col!, recode, recode_matrix, recode_others, onehot, discretize, direct_product
 end
