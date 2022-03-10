@@ -134,7 +134,9 @@ function onehot(df::DataFrame, key, replace=false; ordered_answers = [])
 
     prefix = String(key)
     colnames = prefix .* "_" .* ordered_answers
-    DataFrame(dummy_cols, colnames)
+    result = DataFrame(dummy_cols, colnames)
+    
+    return hcat(df, result)
 end
 
 function concatenate(x1::MaybeString, x2::MaybeString; delim::String = ";")

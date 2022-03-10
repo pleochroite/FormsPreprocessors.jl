@@ -289,41 +289,41 @@ end
 
         ord = ["orange", "apple", "lemon", "kiwi", "melon"]
 
-        @test onehot(df_fruit(), :fruit; ordered_answers = ord)[:, 1] ==
+        @test onehot(df_fruit(), :fruit; ordered_answers = ord)[:, 3] ==
               ["yes", "yes", "no", "no", "no", "yes"]
-        @test onehot(df_fruit(), :fruit)[:, 1] == ["yes", "no", "yes", "yes", "no", "yes"]
-        @test size(onehot(df_fruit(), :fruit)) == (6, 5)
+        @test onehot(df_fruit(), :fruit)[:, 3] == ["yes", "no", "yes", "yes", "no", "yes"]
+        @test size(onehot(df_fruit(), :fruit)) == (6, 7)
 
         r_empty = onehot(df_fruit_empty(), :fruit; ordered_answers = ord)
-        @test size(r_empty) == (6, 5)
-        @test all(x -> (x == "no"), r_empty[5, :])
-        @test all(x -> !(ismissing(x)), r_empty[2, :])
+        @test size(r_empty) == (6, 7)
+        @test all(x -> (x == "no"), r_empty[5, 3:end])
+        @test all(x -> !(ismissing(x)), r_empty[2, 3:end])
 
         r_missing = onehot(df_fruit_missing(), :fruit, ordered_answers = ord)
-        @test size(r_missing) == (6, 5)
-        @test all(x -> ismissing(x), r_missing[4, :])
-        @test all(x -> !(ismissing(x)), r_missing[5, :])
+        @test size(r_missing) == (6, 7)
+        @test all(x -> ismissing(x), r_missing[4, 3:end])
+        @test all(x -> !(ismissing(x)), r_missing[5, 3:end])
 
         r_empty_missing = onehot(df_fruit_missing_empty(), :fruit, ordered_answers = ord)
-        @test size(r_empty_missing) == (6, 5)
-        @test all(x -> ismissing(x), r_empty_missing[5, :])
-        @test all(x -> !(ismissing(x)), r_empty_missing[1, :])
-        @test all(x -> (x == "no"), r_empty_missing[3, :])
+        @test size(r_empty_missing) == (6, 7)
+        @test all(x -> ismissing(x), r_empty_missing[5, 3:end])
+        @test all(x -> !(ismissing(x)), r_empty_missing[1, 3:end])
+        @test all(x -> (x == "no"), r_empty_missing[3, 3:end])
 
         r_empty_missing_apricot = onehot(df_fruit_missing_empty(), :fruit, ordered_answers = vcat(ord, "apricot"))
-        @test size(r_empty_missing_apricot) == (6, 6)
-        @test all(x -> ismissing(x), r_empty_missing_apricot[5, :])
-        @test all(x -> !(ismissing(x)), r_empty_missing_apricot[1, :])
-        @test all(x -> (x == "no"), r_empty_missing_apricot[3, :])
-        @test isequal(r_empty_missing_apricot[:, 6], ["no", "no", "no", "no", missing, "no"])
+        @test size(r_empty_missing_apricot) == (6, 8)
+        @test all(x -> ismissing(x), r_empty_missing_apricot[5, 3:end])
+        @test all(x -> !(ismissing(x)), r_empty_missing_apricot[1, 3:end])
+        @test all(x -> (x == "no"), r_empty_missing_apricot[3, 3:end])
+        @test isequal(r_empty_missing_apricot[:, 8], ["no", "no", "no", "no", missing, "no"])
 
         r_multibyte = onehot(df_fruit_multibyte(), :果物;
             ordered_answers = ["みかん", "りんご", "レモン", "メロン", "キウィ", "あんず"])
-        @test size(r_multibyte) == (6, 6)
-        @test all(x -> ismissing(x), r_multibyte[5, :])
-        @test collect(r_multibyte[1, :]) == ["yes", "yes", "no", "no", "no", "no"]
-        @test all(x -> (x == "no"), r_multibyte[3, :])
-        @test isequal(r_multibyte[:, 6], ["no", "no", "no", "no", missing, "no"])
+        @test size(r_multibyte) == (6, 8)
+        @test all(x -> ismissing(x), r_multibyte[5, 3:end])
+        @test collect(r_multibyte[1, :]) == ["りんご;みかん", 250, "yes", "yes", "no", "no", "no", "no"]
+        @test all(x -> (x == "no"), r_multibyte[3, 3:end])
+        @test isequal(r_multibyte[:, 8], ["no", "no", "no", "no", missing, "no"])
 
         @test_throws ArgumentError onehot(df_fruit_missing_empty(), :fruit;
             ordered_answers = ["apple", "lemon", "melon"])
