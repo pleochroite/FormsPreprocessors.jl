@@ -152,7 +152,6 @@ function concatenate(x1::MaybeString, x2::MaybeString; delim::String = ";")
 end
 
 function direct_product(df::DataFrame, col1, col2, newcol, replace=false; delim = "_")
-
     if col1 == col2
         throw(ArgumentError("Passed identical columns."))
     elseif String(newcol) ∈ names(df)
@@ -209,5 +208,5 @@ function find_range(val::MaybeReal, ranges::Vector{Tuple{T,P}} where {T<:Real,P<
 end
 
 
-export recode!, recode, recode_matrix, onehot, concatenate, discretize, direct_product
+export recode, recode_matrix, onehot, discretize, direct_product
 end

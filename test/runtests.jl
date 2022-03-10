@@ -153,23 +153,23 @@ end
     end
 
     @testset "recode!" begin
-        @test recode!(df(), :bt, ks, vs) == df_cv
-        @test isequal(recode!(df_missing(), :bt, ks, vs), df_missing_cv)
-        @test recode!(df_nest(), :bt, ks, vs) == df_nest_cv
-        @test isequal(recode!(df_nest_missing(), :bt, ks, vs), df_nest_m_cv)
-        @test recode!(df(), :bt, ks, ["1", "2", "3"]).bt == ["1", "1", "3", "other", "2", "2", "C"]
-        @test isequal(recode!(df_missing(), :bt, ks, vs[1:3]).bt,
+        @test FormsPreprocessors.recode!(df(), :bt, ks, vs) == df_cv
+        @test isequal(FormsPreprocessors.recode!(df_missing(), :bt, ks, vs), df_missing_cv)
+        @test FormsPreprocessors.recode!(df_nest(), :bt, ks, vs) == df_nest_cv
+        @test isequal(FormsPreprocessors.recode!(df_nest_missing(), :bt, ks, vs), df_nest_m_cv)
+        @test FormsPreprocessors.recode!(df(), :bt, ks, ["1", "2", "3"]).bt == ["1", "1", "3", "other", "2", "2", "C"]
+        @test isequal(FormsPreprocessors.recode!(df_missing(), :bt, ks, vs[1:3]).bt,
             ["1", "1", "3", "other", "2", missing, "2", "C", missing])
-        @test isequal(recode!(df_nest_missing(), :bt, ks, vs[1:3]).bt,
+        @test isequal(FormsPreprocessors.recode!(df_nest_missing(), :bt, ks, vs[1:3]).bt,
             ["1", ["1", "M"], "3", ["other", missing, "2"], "K", missing, "C"])
-        @test isequal(recode!(df_nest_missing(), :bt, ks).bt,
+        @test isequal(FormsPreprocessors.recode!(df_nest_missing(), :bt, ks).bt,
             ["other", ["other", "M"], "other", ["other", missing, "other"], "K", missing, "C"])
 
-        @test recode!(df(), :bt, ks, vs[1:3]; other = "no answer").bt == ["1", "1", "3", "no answer", "2", "2", "C"]
+        @test FormsPreprocessors.recode!(df(), :bt, ks, vs[1:3]; other = "no answer").bt == ["1", "1", "3", "no answer", "2", "2", "C"]
 
         # testing multibyte data
-        @test recode!(df_multibyte(), :作家名, name_kanji, name_hiragana).作家名 == name_hiragana
-        @test isequal(recode!(df_multibyte(), :作品名, work_kanji, work_hiragana[1:2]; other = "その他").作品名,
+        @test FormsPreprocessors.recode!(df_multibyte(), :作家名, name_kanji, name_hiragana).作家名 == name_hiragana
+        @test isequal(FormsPreprocessors.recode!(df_multibyte(), :作品名, work_kanji, work_hiragana[1:2]; other = "その他").作品名,
             ["はしれめろす", ["〔雨ニモマケズ〕", "銀河鉄道の夜"],
                 ["こころ", "吾輩は猫である", "ゆめじゅうや"], "その他", "山月記", missing])
     end
@@ -337,19 +337,19 @@ end
     end
 
     @testset "concatenate" begin
-        @test concatenate("Apple", "Orange", delim = ",") == "Apple,Orange"
-        @test concatenate("Apple", "Orange") == "Apple;Orange"
-        @test concatenate("Apple", missing, delim = ",") == "Apple"
-        @test concatenate("Apple", missing) == "Apple"
-        @test concatenate(missing, "Orange", delim = ",") == "Orange"
-        @test concatenate(missing, "Orange") == "Orange"
-        @test ismissing(concatenate(missing, missing; delim = ","))
-        @test ismissing(concatenate(missing, missing))
-        @test concatenate("", "Orange"; delim = ",") == ",Orange"
-        @test concatenate("Apple", ""; delim = ",") == "Apple,"
-        @test concatenate("", ""; delim = "@") == "@"
-        @test concatenate("蘋果", "芒果"; delim = "和") == "蘋果和芒果"
-        @test concatenate("蘋果", "芒果"; delim = "纊") == "蘋果纊芒果"
+        @test FormsPreprocessors.concatenate("Apple", "Orange", delim = ",") == "Apple,Orange"
+        @test FormsPreprocessors.concatenate("Apple", "Orange") == "Apple;Orange"
+        @test FormsPreprocessors.concatenate("Apple", missing, delim = ",") == "Apple"
+        @test FormsPreprocessors.concatenate("Apple", missing) == "Apple"
+        @test FormsPreprocessors.concatenate(missing, "Orange", delim = ",") == "Orange"
+        @test FormsPreprocessors.concatenate(missing, "Orange") == "Orange"
+        @test ismissing(FormsPreprocessors.concatenate(missing, missing; delim = ","))
+        @test ismissing(FormsPreprocessors.concatenate(missing, missing))
+        @test FormsPreprocessors.concatenate("", "Orange"; delim = ",") == ",Orange"
+        @test FormsPreprocessors.concatenate("Apple", ""; delim = ",") == "Apple,"
+        @test FormsPreprocessors.concatenate("", ""; delim = "@") == "@"
+        @test FormsPreprocessors.concatenate("蘋果", "芒果"; delim = "和") == "蘋果和芒果"
+        @test FormsPreprocessors.concatenate("蘋果", "芒果"; delim = "纊") == "蘋果纊芒果"
     end
 
     function df_fruit_g()
