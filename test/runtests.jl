@@ -65,9 +65,9 @@ end
         @test FormsPreprocessors.apply_dict(bloodtype, "O") == "3"
         @test FormsPreprocessors.apply_dict(bloodtype, "AB") == "4"
         @test FormsPreprocessors.apply_dict(bloodtype, "K") == "K"
-        @test_throws MethodError FormsPreprocessors.apply_dict(bloodtype, 'A') == 'A'
-        @test_throws MethodError FormsPreprocessors.apply_dict(bloodtype, :A) == :A
-        @test_throws MethodError FormsPreprocessors.apply_dict(bloodtype, 0) == 0
+        @test FormsPreprocessors.apply_dict(bloodtype, 'A') == 'A'
+        @test FormsPreprocessors.apply_dict(bloodtype, :A) == :A
+        @test FormsPreprocessors.apply_dict(bloodtype, 0) == 0
         @test FormsPreprocessors.apply_dict(bloodtype, missing) |> ismissing == true
 
         @test FormsPreprocessors.apply_dict(name_to_hiragana, "宮沢 賢治") == "みやざわ けんじ"
@@ -77,7 +77,7 @@ end
     @testset "apply_dict(Vector)" begin
         @test FormsPreprocessors.apply_dict(bloodtype, ["A", "B"]) == ["1", "2"]
         @test FormsPreprocessors.apply_dict(bloodtype, ["C", "D"]) == ["C", "D"]
-        @test_throws MethodError FormsPreprocessors.apply_dict(bloodtype, [])
+        @test FormsPreprocessors.apply_dict(bloodtype, []) == []
         @test isequal(FormsPreprocessors.apply_dict(bloodtype, [missing, "A", "AB", "C"]), [missing, "1", "4", "C"])
         @test isequal(FormsPreprocessors.apply_dict(bloodtype, [missing]), [missing])
 
@@ -88,9 +88,9 @@ end
     end
 
     @testset "apply_dict(Other types)" begin
-        @test_throws MethodError FormsPreprocessors.apply_dict(bloodtype, [1, 2, 3, 4])
-        @test_throws MethodError FormsPreprocessors.apply_dict(bloodtype, [:id, :name, :birthday])
-        @test_throws MethodError FormsPreprocessors.apply_dict(bloodtype, [missing, :id, 1])
+        @test FormsPreprocessors.apply_dict(bloodtype, [1, 2, 3, 4]) == [1, 2, 3, 4]
+        @test FormsPreprocessors.apply_dict(bloodtype, [:id, :name, :birthday]) == [:id, :name, :birthday]
+        @test isequal(FormsPreprocessors.apply_dict(bloodtype, [missing, :id, 1]), [missing, :id, 1])
     end
 
     @testset "convert_answer!" begin
@@ -130,21 +130,21 @@ end
         @test length(FormsPreprocessors.conversion_dict([], vs)) == 0
         @test FormsPreprocessors.conversion_dict([], []) == Dict([])
         @test_logs (:error,) FormsPreprocessors.conversion_dict([], [])
-        @test_throws ErrorException FormsPreprocessors.conversion_dict(["A", "B", "A"], ["C", "D", "E"])
+        @test_throws ArgumentError FormsPreprocessors.conversion_dict(["A", "B", "A"], ["C", "D", "E"])
     end
 
     @testset "renaming_dict" begin
         @test FormsPreprocessors.renaming_dict(ks, vs) == bloodtype
         @test FormsPreprocessors.renaming_dict(ks, vs[1:3]) == Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "other"])
         @test FormsPreprocessors.renaming_dict(ks, vs[1:3], "その他") == Dict(["A" => "1", "B" => "2", "O" => "3", "AB" => "その他"])
-        @test_throws ErrorException FormsPreprocessors.renaming_dict(ks[1:2], vs)
-        @test_throws MethodError FormsPreprocessors.renaming_dict([], vs)
+        @test_throws ArgumentError FormsPreprocessors.renaming_dict(ks[1:2], vs)
+        @test_throws ArgumentError FormsPreprocessors.renaming_dict([], vs)
         @test FormsPreprocessors.renaming_dict(ks, []) == Dict(["A" => "other", "B" => "other", "O" => "other", "AB" => "other"])
-        @test_throws MethodError FormsPreprocessors.renaming_dict([], [])
-        @test_throws ErrorException FormsPreprocessors.renaming_dict(["A", "B", "A"], ["1", "2", "3"])
-        @test_throws ErrorException FormsPreprocessors.renaming_dict(["A", "B", "A"], [])
-        @test_throws ErrorException FormsPreprocessors.renaming_dict(["A", "B", "A"], ["1", "2", "1"])
-        @test_throws MethodError FormsPreprocessors.renaming_dict("foo", ["1", "2", "3"])
+        @test FormsPreprocessors.renaming_dict([], []) == Dict([])
+        @test_throws ArgumentError FormsPreprocessors.renaming_dict(["A", "B", "A"], ["1", "2", "3"])
+        @test_throws ArgumentError FormsPreprocessors.renaming_dict(["A", "B", "A"], [])
+        @test_throws ArgumentError FormsPreprocessors.renaming_dict(["A", "B", "A"], ["1", "2", "1"])
+        @test_throws ArgumentError FormsPreprocessors.renaming_dict("foo", ["1", "2", "3"])
         @test_throws MethodError FormsPreprocessors.renaming_dict(ks, "BA", "OTHER")
         @test_throws MethodError FormsPreprocessors.renaming_dict("FOO", "BAR")
 
@@ -194,6 +194,21 @@ end
     end
 
 
+    @testset "recode_others" begin
+        @test recode_others(df(), :bt, :newbt, ks[1:2]).newbt == ["A", "A", "other", "other", "B", "B", "other"]
+        @test isequal(recode_others(df_nest_missing(), :bt, :newbt, ks[1:2]).newbt, 
+            ["A", ["A", "other"], "other", ["other", missing, "B"], "other", missing, "other"])
+    end
+
+    @testset "flat" begin
+        @test FormsPreprocessors.flat(["AB", "BC", "CA"]) == ["AB", "BC", "CA"]
+        @test FormsPreprocessors.flat([["AB", "M"], "K"]) == ["AB", "M", "K"]
+        @test isequal(FormsPreprocessors.flat(["A", [missing, "AB"], "CD", missing]),
+            ["A", missing, "AB", "CD", missing])
+    end
+
+
+
     function df_matrix()
         DataFrame(q1 = ["1st", "2nd", "3rd", "2nd", "5th"],
             q2 = ["2nd", "3rd", "4th", "4th", "2nd"])
@@ -209,11 +224,11 @@ end
 
     @testset "recode_matrix" begin
         @test recode_matrix(df_matrix(), [:q1, :q2], v_from, v_to; prefix = "box")[:,3:4] ==
-              DataFrame(box_q1 = ["top2", "top2", "other", "top2", "bottom2"],
+            DataFrame(box_q1 = ["top2", "top2", "other", "top2", "bottom2"],
             box_q2 = ["top2", "other", "bottom2", "bottom2", "top2"])
         @test isequal(recode_matrix(df_matrix_missing(), [:q1, :q2], v_from, v_to; prefix = "box")[:,3:4],
             DataFrame(box_q1 = ["top2", missing, "other", "top2", "bottom2"],
-                box_q2 = ["top2", "other", missing, "bottom2", "top2"]))
+            box_q2 = ["top2", "other", missing, "bottom2", "top2"]))
         @test_throws ArgumentError recode_matrix(rename!(df_matrix_missing(), [:q1, :r_q1]), [:q1, :r_q1], v_from, v_to)
     end
 

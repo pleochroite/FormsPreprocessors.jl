@@ -30,7 +30,7 @@ end
 
 function conversion_dict(vec1, vec2)
     if length(vec1) > length(unique(vec1))
-        throw(error("Some keys appear multiple times. $(vec1)"))
+        throw(ArgumentError("Some keys appear multiple times. $(vec1)"))
     elseif length(vec1) != length(vec2)
         @warn "Lengths of two vectors are not identical. $(min(length(vec1), length(vec2))) entries generated."
     elseif length(vec1) == 0
@@ -39,10 +39,10 @@ function conversion_dict(vec1, vec2)
     Dict([val1 => val2 for (val1, val2) ∈ zip(vec1, vec2)])
 end
 
-function renaming_dict(vec1::Vector{String}, vec2::T where {T<:StringOrEmptyVector} = [], other = "other")
+function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other = "other")
     n = length(vec1) - length(vec2)
     if n < 0
-        throw(error("Key vector is shorter than value vector."))
+        throw(ArgumentError("Key vector is shorter than value vector."))
     elseif n == 0
         v = vec2
     else
@@ -65,10 +65,35 @@ function recode(df::DataFrame, key, newkey,
     _appeared = df[:,key] |> skipmissing |> unique      
 
     renamer = renaming_dict(vec_from, vec_to, other)
-    @show renamer
     result = convert_answer(df, key, newkey, renamer)
 
     return hcat(df, result)
+end
+
+function recode_others(df::DataFrame, key, newkey,
+    regular_answers::Vector{String}, replace=false; other = "other")
+
+    _appeared = df[:,key] |> flat |> skipmissing |> unique
+    renamed_from = setdiff(_appeared, regular_answers)
+
+    renamer = renaming_dict(renamed_from, [], other)
+    result = convert_answer(df, key, newkey, renamer)
+
+    return hcat(df, result)
+end
+
+function flat(vec)
+    result = []
+    for v ∈ vec
+        if ismissing(v)
+            push!(result, missing)
+        elseif typeof(v) <: String
+            push!(result, v)
+        else
+            result = vcat(result, flat(v))
+        end
+    end
+    result
 end
 
 
@@ -212,5 +237,5 @@ function find_range(val::MaybeReal, ranges::Vector{Tuple{T,P}} where {T<:Real,P<
 end
 
 
-export recode, recode_matrix, onehot, discretize, direct_product
+export recode, recode_matrix, recode_others, onehot, discretize, direct_product
 end
