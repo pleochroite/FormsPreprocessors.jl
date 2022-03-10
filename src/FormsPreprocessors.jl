@@ -186,7 +186,7 @@ function discretize(df::DataFrame, col, thresholds::Vector{T} where {T<:Real},
 
     _r = [find_range(val, _ranges) for val ∈ df[:, col]]
     result = DataFrame(x = map(x -> get_at(newcodes, x), _r))
-    rename!(result, [newcol])
+    return hcat(df, rename!(result, [newcol]))
 end
 
 function get_at(vec, i::Union{Missing,Int})
