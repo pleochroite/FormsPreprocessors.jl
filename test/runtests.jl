@@ -193,11 +193,16 @@ end
                 ["こころ", "吾輩は猫である", "ゆめじゅうや"], "その他", "山月記", missing])
     end
 
-
     @testset "recode_others" begin
-        @test recode_others(df(), :bt, :newbt, ks[1:2]).newbt == ["A", "A", "other", "other", "B", "B", "other"]
-        @test isequal(recode_others(df_nest_missing(), :bt, :newbt, ks[1:2]).newbt, 
-            ["A", ["A", "other"], "other", ["other", missing, "B"], "other", missing, "other"])
+        @test recode_others(df(), :bt, :newbt, ks[1:2]).newbt ==
+         ["A", "A", "other", "other", "B", "B", "other"]
+
+        d_ma = DataFrame(bt = ["A", ["A", "B", "O"], "O", ["AB", "A"], "B",
+            missing, ["B", "K"], "C", missing],
+            rh = ["+", "-", missing, "+", "+", missing, "+", "+", missing])
+        @test isequal(recode_others(d_ma, :bt, :newbt, ks[1:2]).newbt, 
+            ["A", ["A", "B", "other"], "other", ["other", "A"], "B", 
+            missing, ["B", "other"], "other", missing])
     end
 
     @testset "flat" begin

@@ -85,36 +85,29 @@ end
 
 function recode_others(df::DataFrame, key, newkey,
     regular_answers::Vector{String}, replace=false; other = "other")
-    @show df[:,key]
-    _appeared = df[:,key] |> skipmissing |> Iterators.flatten |> collect |> unique
-    @show _appeared
-    renamed_from = setdiff(_appeared, regular_answers)
-    @show renamed_from
-    #renamer = renaming_dict(renamed_from, [], other)
-    #result = convert_answer(df, key, newkey, renamer)
 
-    #return hcat(df, result)
-    #target_col = df[:,key]
+    col = collect(df[!, key])
+    _appeared = col |> flat |> skipmissing |> unique
+    renamed_from = setdiff(_appeared, regular_answers)
+
     return recode(df, key, newkey, renamed_from, [], other)
-    #return hcat(df, result, makeunique=true)#, vcat(names(df), String(newkey)))
 end
 
-#function flat(vec)
-#    result = []
-#    for v ∈ vec
-#        if ismissing(v)
-#            push!(result, missing)
-#        elseif typeof(v) <: String
-#            push!(result, v)
-#        elseif typeof(v) <: Vector{Union{Missing, String}}
-#            @show v
-#            result = vcat(result, flat(v))
-#        else
-#            break
-#        end
-#    end
-#    result
-#end
+function flat(vec)
+    result = []
+    for v ∈ vec
+        if ismissing(v)
+            push!(result, missing)
+        elseif typeof(v) <: AbstractString
+            push!(result, v)
+        elseif typeof(v) <: AbstractVector
+            result = vcat(result, flat(v))
+        else
+            @error "Oops, Something happened."
+        end
+    end
+    result
+end
 
 
 function recode_matrix(df::DataFrame, keys::Vector{Symbol},
