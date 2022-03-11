@@ -9,6 +9,8 @@ rename!(d, ["timestamp", "Gender", "Age", "Alcohol", "Fruit", "Price",
 
 ns = Symbol.(names(d))
 
+# You can create pipeline using Chain.jl
+
 cvd = @chain d begin
     # First of all, split MA answers
     split_ma_col!(_, :Fruit)
