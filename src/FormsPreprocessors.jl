@@ -9,6 +9,7 @@ function apply_dict(dict, x::AbstractVector)
     [apply_dict(dict, el) for el ∈ x]
 end
 
+
 function apply_dict(dict, x)
     if ismissing(x)
         missing
@@ -47,9 +48,14 @@ function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other 
     conversion_dict(vec1, v)
 end
 
+"""
+
+
+
+"""
 function recode(df::DataFrame, key, newkey,
     vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [],
-    replace=false; other = "other")
+    ; replace=false, other = "other")
 
     renamer = renaming_dict(vec_from, vec_to, other)
     result = convert_answer(df, key, newkey, renamer)
@@ -58,13 +64,13 @@ function recode(df::DataFrame, key, newkey,
 end
 
 function recode_others(df::DataFrame, key, newkey,
-    regular_answers::Vector{String}, replace=false; other = "other")
+    regular_answers::Vector{String}; replace=false, other = "other")
 
     col = collect(df[!, key])
     _appeared = col |> flat |> skipmissing |> unique
     renamed_from = setdiff(_appeared, regular_answers)
 
-    return recode(df, key, newkey, renamed_from, [], other)
+    return recode(df, key, newkey, renamed_from, []; other=other)
 end
 
 function flat(vec)
@@ -87,7 +93,7 @@ end
 
 function recode_matrix(df::DataFrame, keys::Vector{Symbol},
     vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [],
-    replace=false; other = "other", prefix = "r")
+    ;other = "other", prefix = "r", replace=false)
 
     newcolnames = "$(prefix)" .* "_" .* String.(keys)
     colliding_names = intersect(names(df), newcolnames)
@@ -116,8 +122,6 @@ function split_ma_col!(df::DataFrame, key)
     return transform!(df, key => ByRow(x -> split_ma.(x, ";")) => key)
 end
 
-
-
 function answers_to_dummy_from_raw(answer, key)
     results = []
     _split_col = split_ma.(key)
@@ -131,7 +135,7 @@ function answers_to_dummy_from_raw(answer, key)
     results
 end
 
-function onehot_from_raw(df::DataFrame, key, replace=false; ordered_answers = [])
+function onehot_from_raw(df::DataFrame, key; ordered_answers = [], replace=false)
     key = df[:, key]
     _split_col = split_ma.(key)
     _appeared = _split_col |> skipmissing |> Iterators.flatten |> unique
@@ -220,7 +224,7 @@ function concatenate(x1, x2; delim::String = ";")
     end
 end
 
-function direct_product(df::DataFrame, col1, col2, newcol, replace=false; delim = "_")
+function direct_product(df::DataFrame, col1, col2, newcol; delim = "_", replace=false)
     if col1 == col2
         throw(ArgumentError("Passed identical columns."))
     elseif String(newcol) ∈ names(df)
@@ -232,8 +236,8 @@ function direct_product(df::DataFrame, col1, col2, newcol, replace=false; delim 
 end
 
 function discretize(df::DataFrame, key, thresholds::Vector{T} where {T<:Real},
-    newcol = "class_$(String(key))", replace=false;
-    newcodes = [])
+    newcol="class_$(String(key))";
+    newcodes=[], replace=false)
 
     if length(thresholds) > length(unique(thresholds))
         throw(ArgumentError("Thresholds contain the same value."))
