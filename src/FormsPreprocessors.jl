@@ -49,13 +49,33 @@ function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other 
 end
 
 """
+    recode(df, key, vec_from, vec_to=[]; other="other")
 
+Recodes values in `key` column to new one.
+Items not in `vec_from` keeps original values. 
+If `vec_to` is shorter than `vec_from`, the last values are recoded to `other`.
+If you want to recode all answers to open-ended question such as 'other:______' to 'other', use [`recode_others`](@ref)
 
+# Example
+
+df = DataFrame(item = ["Apple", "Orange", "Tomato", "Pepper"])
+
+recode(df, :item, :newitem, ["Apple", "Orange", "Pepper"], ["Fruit", "Fruit"])
+
+# output
+
+Row │ item    newitem 
+│ String  String  
+─────┼─────────────────
+1 │ Apple   Fruit
+2 │ Orange  Fruit
+3 │ Tomato  Tomato
+4 │ Pepper  other
 
 """
 function recode(df::DataFrame, key, newkey,
-    vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [],
-    ; replace=false, other = "other")
+    vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [];
+    other = "other", replace=false)
 
     renamer = renaming_dict(vec_from, vec_to, other)
     result = convert_answer(df, key, newkey, renamer)
