@@ -246,51 +246,6 @@ function split_ma_col!(df::DataFrame, key; delim = ";")
     return transform!(df, key => ByRow(x -> split_ma.(x, delim)) => key)
 end
 
-function answers_to_dummy_from_raw(answer, key)
-    results = []
-    _split_col = split_ma.(key)
-    for cell ∈ _split_col
-        if ismissing(cell)
-            push!(results, missing)
-        else
-            push!(results, answer ∈ cell ? "yes" : "no")
-        end
-    end
-    results
-end
-
-function onehot_from_raw(df::DataFrame, key; ordered_answers = [], replace = false)
-    key = df[:, key]
-    _split_col = split_ma.(key)
-    _appeared = _split_col |> skipmissing |> Iterators.flatten |> unique
-    appeared = filter(x -> x ≠ "" && !(ismissing(x)), _appeared)
-
-    if length(ordered_answers) == 0
-        ordered_answers = appeared
-    end
-
-    if setdiff(appeared, ordered_answers) ≠ []
-        throw(ArgumentError("Some input are missing from ordered_answers. Please check: $(setdiff(appeared, ordered_answers))"))
-    end
-
-    if length(ordered_answers) > length(unique(ordered_answers))
-        throw(ArgumentError("Duplicate values detected. Please check: $(ordered_answers)"))
-    end
-
-    dummy_cols = []
-    for ans ∈ ordered_answers
-        dummy = answers_to_dummy_from_raw(ans, key)
-        push!(dummy_cols, dummy)
-    end
-
-    prefix = String(key)
-    colnames = prefix .* "_" .* ordered_answers
-    result = DataFrame(dummy_cols, colnames)
-
-    return hcat(df, result)
-end
-
-
 function answers_to_dummy(answer, col)
     results = []
     for cell ∈ col
