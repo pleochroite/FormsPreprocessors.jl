@@ -48,7 +48,7 @@ function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other 
     conversion_dict(vec1, v)
 end
 
-@doc text"""
+@doc """
     recode(df, key, newkey, vec_from, vec_to=[]; other="other")
 
 Recodes values in `key` column with values in `vec_from` into corresponding `vec_to` values, 
