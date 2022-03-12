@@ -49,12 +49,13 @@ function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other 
 end
 
 """
-    recode(df, key, vec_from, vec_to=[]; other="other")
+    recode(df, key, newkey, vec_from, vec_to=[]; other="other")
 
-Recodes values in `key` column to new one.
-Items not in `vec_from` keeps original values. 
+Recodes values in `key` column with values in `vec_from` into corresponding `vec_to` values, 
+which are put in `newkey` column.
+Items not in `vec_from` keep original values. 
 If `vec_to` is shorter than `vec_from`, the last values are recoded to `other`.
-If you want to recode all answers to open-ended question such as 'other:______' to 'other', use [`recode_others`](@ref)
+If you want to recode all irregular answers such as 'other:______' to `other`s, use [`recode_others`](@ref).
 
 # Example
 
@@ -83,8 +84,34 @@ function recode(df::DataFrame, key, newkey,
     return hcat(df, result)
 end
 
+"""
+    recode_others(df, key, newkey, regular_answers; other="other")
+
+Recodes all appeared values in `key` columns but in `regular_answers` into `other`, 
+which are put in `newkey` column.
+
+# Example
+
+df = DataFrame(item = ["Apple", "Orange", "Tomato", "Pepper"])
+
+recode_others(df, :item, :newitem, ["Apple", "Orange"])
+
+# output
+
+Row │ item    newitem 
+│ String  String  
+─────┼─────────────────
+1 │ Apple   Apple
+2 │ Orange  Orange
+3 │ Tomato  other
+4 │ Pepper  other
+
+See also [`recode`](@ref)
+
+"""
+
 function recode_others(df::DataFrame, key, newkey,
-    regular_answers::Vector{String}; replace=false, other = "other")
+    regular_answers::Vector{String}; other="other", replace=false)
 
     col = collect(df[!, key])
     _appeared = col |> flat |> skipmissing |> unique
