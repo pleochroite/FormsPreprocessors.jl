@@ -1,4 +1,5 @@
 using Documenter, FormsPreprocessors
+using Weave
 
 makedocs(
     sitename = "FormsPreprocessors",
@@ -9,6 +10,8 @@ makedocs(
     ],
     modules = [FormsPreprocessors]
     )
+
+weave("tutorial.jmd", doctype="github")
 
 deploydocs(
     repo = "github.com/pleochroite/FormsPreprocessors.jl.git"
