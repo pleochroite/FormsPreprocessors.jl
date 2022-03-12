@@ -49,7 +49,7 @@ function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other 
 end
 
 
-@doc """
+"""
     recode(df, key, newkey, vec_from, vec_to=[]; other="other")
 
 Recodes values in `key` column with values in `vec_from` into corresponding `vec_to` values, 
@@ -63,13 +63,10 @@ question, use [`recode_matrix`](@ref)
 
 # Example
 
-df = DataFrame(item = ["Apple", "Orange", "Tomato", "Pepper"])
-
-recode(df, :item, :newitem, ["Apple", "Orange", "Pepper"], ["Fruit", "Fruit"])
-
-## output
-
 ```
+julia> df = DataFrame(item = ["Apple", "Orange", "Tomato", "Pepper"])
+julia> recode(df, :item, :newitem, ["Apple", "Orange", "Pepper"], ["Fruit", "Fruit"])
+4x2 DataFrame
 Row  │ item    newitem 
      │ String  String  
 ─────┼─────────────────
@@ -89,13 +86,10 @@ You can recode values stored in a column of vectors which can be generated using
 
 # Example
 
-df = DataFrame(item = [["Apple", "Orange"], ["Tomato"], ["Tomato", "Pepper"]])
-
-recode(df, :item, :newitem, ["Tomato", "Pepper"], ["Vegitable", "Spice"])
-
-# output
-
 ```
+julia> df = DataFrame(item = [["Apple", "Orange"], ["Tomato"], ["Tomato", "Pepper"]])
+julia> recode(df, :item, :newitem, ["Tomato", "Pepper"], ["Vegitable", "Spice"])
+3x2 DataFrame
 Row  │ item                  newitem                
      │ Array…                Array…                 
 ─────┼──────────────────────────────────────────────
@@ -125,13 +119,10 @@ which are stored in `newkey` column.
 
 # Example
 
-df = DataFrame(item = ["Apple", "Orange", "Tomato", "Pepper"])
-
-recode_others(df, :item, :newitem, ["Apple", "Orange"])
-
-# output
-
 ```
+julia> df = DataFrame(item = ["Apple", "Orange", "Tomato", "Pepper"])
+julia> recode_others(df, :item, :newitem, ["Apple", "Orange"])
+
 Row  │ item    newitem 
      │ String  String  
 ─────┼─────────────────
@@ -180,14 +171,12 @@ New values from column :foo are stored in corresponding column named :`prefix`_f
 
 # Example
 
-df = DataFrame(q1=["Strongly agree", "Disagree", "Agree", "Neutral", "Strongly disagree"], 
-    q2 = ["Disagree", "Strongly disagree", "Neutral", "Agree", "Agree"])
-
-recode_matrix(df, [:q1, :q2], ["Strongly agree", "Agree", "Disagree", "Strongly disagree"], 
-["t2b", "t2b", "b2b", "b2b"])
-
-# output
 ```
+julia> df = DataFrame(q1=["Strongly agree", "Disagree", "Agree", "Neutral", "Strongly disagree"], 
+    q2 = ["Disagree", "Strongly disagree", "Neutral", "Agree", "Agree"])
+julia> recode_matrix(df, [:q1, :q2], ["Strongly agree", "Agree", "Disagree", "Strongly disagree"], 
+["t2b", "t2b", "b2b", "b2b"])
+5x4 DataFrame
 Row  │ q1                 q2                 r_q1     r_q2    
      │ String             String             String   String  
 ─────┼────────────────────────────────────────────────────────
@@ -232,15 +221,12 @@ end
 
 Mutates `key` columns with values of "`delim`-concatenated" MA answers into column with vectors.
 
-
 # Example
 
-df = DataFrame(item=["Apple;Orange", "Tomato", "Tomato;Pepper"])
-split_ma_col!(df, :item)
-
-# output
-
 ```
+julia> df = DataFrame(item=["Apple;Orange", "Tomato", "Tomato;Pepper"])
+julia> split_ma_col!(df, :item)
+3x1 DataFrame
 Row  │ item                              
      │ Array…                            
 ─────┼───────────────────────────────────
@@ -275,13 +261,10 @@ If you want to sort columns generated, specify `ordered_answers`.
 If not `ordered_answers` specified, columns are ordered by value appearance.
 
 # Example
-
-df = DataFrame(item=["Apple;Orange", "Tomato", "Tomato;Pepper"])
-onehot(df, :item; ordered_answers=["Tomato", "Pepper", "Apple", "Orange"])
-
-# output
-
 ```
+julia> df = DataFrame(item=["Apple;Orange", "Tomato", "Tomato;Pepper"])
+julia> onehot(df, :item; ordered_answers=["Tomato", "Pepper", "Apple", "Orange"])
+3x5 DataFrame
 Row  │ item                  item_Tomato  item_Pepper  item_Apple  item_Orange 
      │ Array…                Any          Any          Any         Any         
 ─────┼─────────────────────────────────────────────────────────────────────────────────────
@@ -341,14 +324,11 @@ Concatenates values of `col1` and `col2`, which is stored in `newcol`.
 
 # Example
 
-df = DataFrame(q1 = ["young", "old", "young", "young"],
-    q2 = ["no", "no", "no", "yes"])
-
-direct_product(df, :q1, :q2, :q1xq2)
-
-# output
-
 ```
+julia> df = DataFrame(q1 = ["young", "old", "young", "young"],
+    q2 = ["no", "no", "no", "yes"])
+julia> direct_product(df, :q1, :q2, :q1xq2)
+
 Row  │ q1      q2      q1xq2   
      │ String  String  String  
 ─────┼─────────────────────────
@@ -362,15 +342,11 @@ If either value is missing, the other value itself is stored.
 If either value is "", the other value with `delim` is stored.
 
 # Example
-
-df = DataFrame(q1 = ["young", missing, "young", ""],
-    q2 = ["no", "no", missing, "yes"])
-
-direct_product(df, :q1, :q2, :q1xq2)
-
-# Output
-
 ```
+julia> df = DataFrame(q1 = ["young", missing, "young", ""],
+    q2 = ["no", "no", missing, "yes"])
+julia> direct_product(df, :q1, :q2, :q1xq2)
+4x3 DataFrame
 Row  │ q1       q2       q1xq2  
      │ String?  String?  String 
 ─────┼──────────────────────────
@@ -400,14 +376,10 @@ The number of classes is length(thresholds) + 1, because the ranges to be
 Therefore, the length of `newcodes` must be length(thresholds) + 1.
 
 # Example
-
-df = DataFrame(expense=[100, 250, 300, 1000, 150])
-
-discretize(df, :expense, [100, 300, 500]; newcodes=["No", "Low", "Middle", "High"])
-
-# Output
-
 ```
+julia> df = DataFrame(expense=[100, 250, 300, 1000, 150])
+julia> discretize(df, :expense, [100, 300, 500]; newcodes=["No", "Low", "Middle", "High"])
+5x2 DataFrame
 Row  │ expense  class_expense 
      │ Int64    String        
 ─────┼────────────────────────
