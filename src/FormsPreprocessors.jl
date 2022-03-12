@@ -105,7 +105,7 @@ See also `recode_others`(@ref), `recode_matrix`(@ref)
 """
 function recode(df::DataFrame, key, newkey,
     vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [];
-    other = "other", replace=false)
+    other = "other", replace = false)
 
     renamer = renaming_dict(vec_from, vec_to, other)
     result = convert_answer(df, key, newkey, renamer)
@@ -140,13 +140,13 @@ See also [`recode`](@ref)
 
 """
 function recode_others(df::DataFrame, key, newkey,
-    regular_answers::Vector{String}; other="other", replace=false)
+    regular_answers::Vector{String}; other = "other", replace = false)
 
     col = collect(df[!, key])
     _appeared = col |> flat |> skipmissing |> unique
     renamed_from = setdiff(_appeared, regular_answers)
 
-    return recode(df, key, newkey, renamed_from, []; other=other)
+    return recode(df, key, newkey, renamed_from, []; other = other)
 end
 
 function flat(vec)
@@ -197,11 +197,11 @@ See also `recode`(@ref)
 """
 function recode_matrix(df::DataFrame, keys::Vector{Symbol},
     vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [],
-    ;other = "other", prefix = "r", replace=false)
+    ; other = "other", prefix = "r", replace = false)
 
     newcolnames = "$(prefix)" .* "_" .* String.(keys)
     colliding_names = intersect(names(df), newcolnames)
-    
+
     if colliding_names ≠ []
         throw(ArgumentError("New column name already exists in the dataframe."))
     end
@@ -242,7 +242,7 @@ Row │ item
 3 │ ["Tomato", "Pepper"]
 
 """
-function split_ma_col!(df::DataFrame, key; delim=";")
+function split_ma_col!(df::DataFrame, key; delim = ";")
     return transform!(df, key => ByRow(x -> split_ma.(x, delim)) => key)
 end
 
@@ -259,7 +259,7 @@ function answers_to_dummy_from_raw(answer, key)
     results
 end
 
-function onehot_from_raw(df::DataFrame, key; ordered_answers = [], replace=false)
+function onehot_from_raw(df::DataFrame, key; ordered_answers = [], replace = false)
     key = df[:, key]
     _split_col = split_ma.(key)
     _appeared = _split_col |> skipmissing |> Iterators.flatten |> unique
@@ -286,7 +286,7 @@ function onehot_from_raw(df::DataFrame, key; ordered_answers = [], replace=false
     prefix = String(key)
     colnames = prefix .* "_" .* ordered_answers
     result = DataFrame(dummy_cols, colnames)
-    
+
     return hcat(df, result)
 end
 
@@ -328,7 +328,7 @@ Row │ item                               item_Tomato  item_Pepper  item_Apple 
 
 """
 function onehot(df::DataFrame, key; ordered_answers = [])
-    
+
     col = collect(df[!, key])
     _appeared = col |> flat |> skipmissing |> unique
     appeared = filter(x -> x ≠ "" && !(ismissing(x)), _appeared)
@@ -354,7 +354,7 @@ function onehot(df::DataFrame, key; ordered_answers = [])
     prefix = String(key)
     colnames = prefix .* "_" .* ordered_answers
     result = DataFrame(dummy_cols, colnames)
-    
+
     return hcat(df, result)
 end
 
@@ -415,7 +415,7 @@ Row │ q1       q2       q1xq2
 4 │          yes      _yes
 
 """
-function direct_product(df::DataFrame, col1, col2, newcol; delim = "_", replace=false)
+function direct_product(df::DataFrame, col1, col2, newcol; delim = "_", replace = false)
     if col1 == col2
         throw(ArgumentError("Passed identical columns."))
     elseif String(newcol) ∈ names(df)
@@ -453,8 +453,8 @@ Row │ expense  class_expense
 
 """
 function discretize(df::DataFrame, key, thresholds::Vector{T} where {T<:Real},
-    newcol="class_$(String(key))";
-    newcodes=[], replace=false)
+    newcol = "class_$(String(key))";
+    newcodes = [], replace = false)
 
     if length(thresholds) > length(unique(thresholds))
         throw(ArgumentError("Thresholds contain the same value."))
