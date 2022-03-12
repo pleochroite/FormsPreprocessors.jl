@@ -52,10 +52,13 @@ end
     recode(df, key, newkey, vec_from, vec_to=[]; other="other")
 
 Recodes values in `key` column with values in `vec_from` into corresponding `vec_to` values, 
-which are put in `newkey` column.
+which are stored in `newkey` column.
 Items not in `vec_from` keep original values. 
 If `vec_to` is shorter than `vec_from`, the last values are recoded to `other`.
-If you want to recode all irregular answers such as 'other:______' to `other`s, use [`recode_others`](@ref).
+If you want to recode all irregular answers such as 'other:______' to `other`s, 
+use [`recode_others`](@ref).
+If you want to recode columns with common choices such as choices to matrix type 
+question, use [`recode_matrix`](@ref)
 
 # Example
 
@@ -63,7 +66,7 @@ df = DataFrame(item = ["Apple", "Orange", "Tomato", "Pepper"])
 
 recode(df, :item, :newitem, ["Apple", "Orange", "Pepper"], ["Fruit", "Fruit"])
 
-# output
+## output
 
 Row │ item    newitem 
 │ String  String  
@@ -72,6 +75,32 @@ Row │ item    newitem
 2 │ Orange  Fruit
 3 │ Tomato  Tomato
 4 │ Pepper  other
+
+
+You can recode values stored in a column of vectors which can be generated using
+`split_ma_col!`(@ref).
+
+!!! Note
+If you recode a column of vectors, single-value answer must be vectorized, 
+as `split_ma_col!`(@ref) does.
+
+
+# Example
+
+df = DataFrame(item = [["Apple", "Orange"], ["Tomato"], ["Tomato", "Pepper"]])
+
+recode(df, :item, :newitem, ["Tomato", "Pepper"], ["Vegitable", "Spice"])
+
+# output
+
+Row │ item                  newitem                
+│ Array…                Array…                 
+─────┼──────────────────────────────────────────────
+1 │ ["Apple", "Orange"]   ["Apple", "Orange"]
+2 │ ["Tomato"]            ["Vegitable"]
+3 │ ["Tomato", "Pepper"]  ["Vegitable", "Spice"]
+
+See also `recode_others`(@ref), `recode_matrix`(@ref)
 
 """
 function recode(df::DataFrame, key, newkey,
@@ -84,11 +113,12 @@ function recode(df::DataFrame, key, newkey,
     return hcat(df, result)
 end
 
+
 """
     recode_others(df, key, newkey, regular_answers; other="other")
 
-Recodes all appeared values in `key` columns but in `regular_answers` into `other`, 
-which are put in `newkey` column.
+Recodes all appeared values in `key` column but in `regular_answers` into `other`, 
+which are stored in `newkey` column.
 
 # Example
 
@@ -109,7 +139,6 @@ Row │ item    newitem
 See also [`recode`](@ref)
 
 """
-
 function recode_others(df::DataFrame, key, newkey,
     regular_answers::Vector{String}; other="other", replace=false)
 
@@ -138,6 +167,34 @@ function flat(vec)
 end
 
 
+"""
+    recode_matrix(df, keys, vec_from, vec_to=[]; other="other", prefix="r")
+
+Recodes values of `vec_from` in `keys` columns to `vec_to` values.
+New values from column :foo are stored in corresponding column named :`prefix`_foo. 
+
+# Example
+
+df = DataFrame(q1=["Strongly agree", "Disagree", "Agree", "Neutral", "Strongly disagree"], 
+    q2 = ["Disagree", "Strongly disagree", "Neutral", "Agree", "Agree"])
+
+recode_matrix(df, [:q1, :q2], ["Strongly agree", "Agree", "Disagree", "Strongly disagree"], 
+["t2b", "t2b", "b2b", "b2b"])
+
+# output
+
+Row │ q1                 q2                 r_q1     r_q2    
+│ String             String             String   String  
+─────┼────────────────────────────────────────────────────────
+1 │ Strongly agree     Disagree           t2b      b2b
+2 │ Disagree           Strongly disagree  b2b      b2b
+3 │ Agree              Neutral            t2b      Neutral
+4 │ Neutral            Agree              Neutral  t2b
+5 │ Strongly disagree  Agree              b2b      t2b
+
+
+See also `recode`(@ref)
+"""
 function recode_matrix(df::DataFrame, keys::Vector{Symbol},
     vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [],
     ;other = "other", prefix = "r", replace=false)
@@ -165,8 +222,28 @@ function split_ma(x, delim = ";")
     ismissing(x) ? missing : split(x, delim)
 end
 
-function split_ma_col!(df::DataFrame, key)
-    return transform!(df, key => ByRow(x -> split_ma.(x, ";")) => key)
+"""
+    split_ma_col!(df, key; delim=";")
+
+Mutates `key` columns with values of "`delim`-concatenated" MA answers into column with vectors.
+
+
+# Example
+
+df = DataFrame(item=["Apple;Orange", "Tomato", "Tomato;Pepper"])
+split_ma_col!(df, :item)
+
+# output
+Row │ item                              
+│ Array…                            
+─────┼───────────────────────────────────
+1 │ ["Apple", "Orange"]
+2 │ ["Tomato"]
+3 │ ["Tomato", "Pepper"]
+
+"""
+function split_ma_col!(df::DataFrame, key; delim=";")
+    return transform!(df, key => ByRow(x -> split_ma.(x, delim)) => key)
 end
 
 function answers_to_dummy_from_raw(answer, key)
@@ -227,7 +304,30 @@ function answers_to_dummy(answer, col)
 end
 
 
-function onehot(df::DataFrame, key, replace=false; ordered_answers = [])
+"""
+    onehot(df, key; ordered_answers=[])
+
+Performs one-hot encoding on `key` column.
+The column is expected to be of vectors, as `split_ma_col!` generates.
+If you want to sort columns generated, specify `ordered_answers`.
+If not `ordered_answers` specified, columns are ordered by value appearance.
+
+# Example
+
+df = DataFrame(item=["Apple;Orange", "Tomato", "Tomato;Pepper"])
+onehot(df, :item; ordered_answers=["Tomato", "Pepper", "Apple", "Orange"])
+
+# output
+
+Row │ item                               item_Tomato  item_Pepper  item_Apple  item_Orange 
+│ Array…                             Any          Any          Any         Any         
+─────┼──────────────────────────────────────────────────────────────────────────────────────
+1 │ ["Apple", "Orange"]  no           no           yes         yes
+2 │ ["Tomato"]        yes          no           no          no
+3 │ ["Tomato", "Pepper"]  yes          yes          no          no
+
+"""
+function onehot(df::DataFrame, key; ordered_answers = [])
     
     col = collect(df[!, key])
     _appeared = col |> flat |> skipmissing |> unique
@@ -271,6 +371,50 @@ function concatenate(x1, x2; delim::String = ";")
     end
 end
 
+"""
+    direct_product(df, col1, col2, newcol)
+
+Concatenates values of `col1` and `col2`, which is stored in `newcol`.
+
+# Example
+
+df = DataFrame(q1 = ["young", "old", "young", "young"],
+    q2 = ["no", "no", "no", "yes"])
+
+direct_product(df, :q1, :q2, :q1xq2)
+
+# output
+
+Row │ q1      q2      q1xq2   
+│ String  String  String  
+─────┼─────────────────────────
+1 │ young     no      young_no
+2 │ old      no      old_no
+3 │ young     no      young_no
+4 │ young     yes     young_yes
+
+
+If either value is missing, the other value itself is stored.
+If either value is "", the other value with `delim` is stored.
+
+# Example
+
+df = DataFrame(q1 = ["young", missing, "young", ""],
+    q2 = ["no", "no", missing, "yes"])
+
+direct_product(df, :q1, :q2, :q1xq2)
+
+# Output
+
+Row │ q1       q2       q1xq2  
+│ String?  String?  String 
+─────┼──────────────────────────
+1 │ young      no       young_no
+2 │ missing  no       no
+3 │ young      missing  young
+4 │          yes      _yes
+
+"""
 function direct_product(df::DataFrame, col1, col2, newcol; delim = "_", replace=false)
     if col1 == col2
         throw(ArgumentError("Passed identical columns."))
@@ -282,6 +426,32 @@ function direct_product(df::DataFrame, col1, col2, newcol; delim = "_", replace=
     return hcat(df, rename!(r, [newcol]))
 end
 
+"""
+    discretize(df, key, thresholds, newcol="class_\$(String(key))"; newcodes=[])
+
+Classify numerical answers to classes defined by `thresholds`.
+The number of classes is length(thresholds) + 1, because the ranges to be 
+(-Inf, thresholds[1]), [thresholds[1], thresholds[2]), ..., [thresholds[end], Inf].
+Therefore, the length of `newcodes` must be length(thresholds) + 1.
+
+# Example
+
+df = DataFrame(expense=[100, 250, 300, 1000, 150])
+
+discretize(df, :expense, [100, 300, 500]; newcodes=["No", "Low", "Middle", "High"])
+
+# Output
+
+Row │ expense  class_expense 
+│ Int64    String        
+─────┼────────────────────────
+1 │     100  Low
+2 │     250  Low
+3 │     300  Middle
+4 │    1000  High
+5 │     150  Low
+
+"""
 function discretize(df::DataFrame, key, thresholds::Vector{T} where {T<:Real},
     newcol="class_$(String(key))";
     newcodes=[], replace=false)
