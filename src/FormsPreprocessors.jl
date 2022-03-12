@@ -48,6 +48,7 @@ function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other 
     conversion_dict(vec1, v)
 end
 
+
 @doc """
     recode(df, key, newkey, vec_from, vec_to=[]; other="other")
 
@@ -68,14 +69,15 @@ recode(df, :item, :newitem, ["Apple", "Orange", "Pepper"], ["Fruit", "Fruit"])
 
 ## output
 
-Row │ item    newitem 
-│ String  String  
+```
+Row  │ item    newitem 
+     │ String  String  
 ─────┼─────────────────
-1 │ Apple   Fruit
-2 │ Orange  Fruit
-3 │ Tomato  Tomato
-4 │ Pepper  other
-
+1    │ Apple   Fruit
+2    │ Orange  Fruit
+3    │ Tomato  Tomato
+4    │ Pepper  other
+```
 
 You can recode values stored in a column of vectors which can be generated using
 `split_ma_col!`(@ref).
@@ -93,15 +95,16 @@ recode(df, :item, :newitem, ["Tomato", "Pepper"], ["Vegitable", "Spice"])
 
 # output
 
-Row │ item                  newitem                
-│ Array…                Array…                 
+```
+Row  │ item                  newitem                
+     │ Array…                Array…                 
 ─────┼──────────────────────────────────────────────
-1 │ ["Apple", "Orange"]   ["Apple", "Orange"]
-2 │ ["Tomato"]            ["Vegitable"]
-3 │ ["Tomato", "Pepper"]  ["Vegitable", "Spice"]
+1    │ ["Apple", "Orange"]   ["Apple", "Orange"]
+2    │ ["Tomato"]            ["Vegitable"]
+3    │ ["Tomato", "Pepper"]  ["Vegitable", "Spice"]
+```
 
 See also `recode_others`(@ref), `recode_matrix`(@ref)
-
 """
 function recode(df::DataFrame, key, newkey,
     vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [];
@@ -128,13 +131,15 @@ recode_others(df, :item, :newitem, ["Apple", "Orange"])
 
 # output
 
-Row │ item    newitem 
-│ String  String  
+```
+Row  │ item    newitem 
+     │ String  String  
 ─────┼─────────────────
-1 │ Apple   Apple
-2 │ Orange  Orange
-3 │ Tomato  other
-4 │ Pepper  other
+1    │ Apple   Apple
+2    │ Orange  Orange
+3    │ Tomato  other
+4    │ Pepper  other
+```
 
 See also [`recode`](@ref)
 
@@ -182,16 +187,16 @@ recode_matrix(df, [:q1, :q2], ["Strongly agree", "Agree", "Disagree", "Strongly 
 ["t2b", "t2b", "b2b", "b2b"])
 
 # output
-
-Row │ q1                 q2                 r_q1     r_q2    
-│ String             String             String   String  
+```
+Row  │ q1                 q2                 r_q1     r_q2    
+     │ String             String             String   String  
 ─────┼────────────────────────────────────────────────────────
-1 │ Strongly agree     Disagree           t2b      b2b
-2 │ Disagree           Strongly disagree  b2b      b2b
-3 │ Agree              Neutral            t2b      Neutral
-4 │ Neutral            Agree              Neutral  t2b
-5 │ Strongly disagree  Agree              b2b      t2b
-
+1    │ Strongly agree     Disagree           t2b      b2b
+2    │ Disagree           Strongly disagree  b2b      b2b
+3    │ Agree              Neutral            t2b      Neutral
+4    │ Neutral            Agree              Neutral  t2b
+5    │ Strongly disagree  Agree              b2b      t2b
+```
 
 See also `recode`(@ref)
 """
@@ -234,13 +239,15 @@ df = DataFrame(item=["Apple;Orange", "Tomato", "Tomato;Pepper"])
 split_ma_col!(df, :item)
 
 # output
-Row │ item                              
-│ Array…                            
-─────┼───────────────────────────────────
-1 │ ["Apple", "Orange"]
-2 │ ["Tomato"]
-3 │ ["Tomato", "Pepper"]
 
+```
+Row  │ item                              
+     │ Array…                            
+─────┼───────────────────────────────────
+1    │ ["Apple", "Orange"]
+2    │ ["Tomato"]
+3    │ ["Tomato", "Pepper"]
+```
 """
 function split_ma_col!(df::DataFrame, key; delim = ";")
     return transform!(df, key => ByRow(x -> split_ma.(x, delim)) => key)
@@ -274,13 +281,14 @@ onehot(df, :item; ordered_answers=["Tomato", "Pepper", "Apple", "Orange"])
 
 # output
 
-Row │ item                               item_Tomato  item_Pepper  item_Apple  item_Orange 
-│ Array…                             Any          Any          Any         Any         
-─────┼──────────────────────────────────────────────────────────────────────────────────────
-1 │ ["Apple", "Orange"]  no           no           yes         yes
-2 │ ["Tomato"]        yes          no           no          no
-3 │ ["Tomato", "Pepper"]  yes          yes          no          no
-
+```
+Row  │ item                  item_Tomato  item_Pepper  item_Apple  item_Orange 
+     │ Array…                Any          Any          Any         Any         
+─────┼─────────────────────────────────────────────────────────────────────────────────────
+1    │ ["Apple", "Orange"]   no           no           yes         yes
+2    │ ["Tomato"]            yes          no           no          no
+3    │ ["Tomato", "Pepper"]  yes          yes          no          no
+```
 """
 function onehot(df::DataFrame, key; ordered_answers = [])
 
@@ -340,14 +348,15 @@ direct_product(df, :q1, :q2, :q1xq2)
 
 # output
 
-Row │ q1      q2      q1xq2   
-│ String  String  String  
+```
+Row  │ q1      q2      q1xq2   
+     │ String  String  String  
 ─────┼─────────────────────────
-1 │ young     no      young_no
-2 │ old      no      old_no
-3 │ young     no      young_no
-4 │ young     yes     young_yes
-
+1    │ young     no      young_no
+2    │ old      no      old_no
+3    │ young     no      young_no
+4    │ young     yes     young_yes
+```
 
 If either value is missing, the other value itself is stored.
 If either value is "", the other value with `delim` is stored.
@@ -361,14 +370,15 @@ direct_product(df, :q1, :q2, :q1xq2)
 
 # Output
 
-Row │ q1       q2       q1xq2  
-│ String?  String?  String 
+```
+Row  │ q1       q2       q1xq2  
+     │ String?  String?  String 
 ─────┼──────────────────────────
-1 │ young      no       young_no
-2 │ missing  no       no
-3 │ young      missing  young
-4 │          yes      _yes
-
+1    │ young      no       young_no
+2    │ missing  no       no
+3    │ young      missing  young
+4    │          yes      _yes
+```
 """
 function direct_product(df::DataFrame, col1, col2, newcol; delim = "_", replace = false)
     if col1 == col2
@@ -397,15 +407,16 @@ discretize(df, :expense, [100, 300, 500]; newcodes=["No", "Low", "Middle", "High
 
 # Output
 
-Row │ expense  class_expense 
-│ Int64    String        
+```
+Row  │ expense  class_expense 
+     │ Int64    String        
 ─────┼────────────────────────
-1 │     100  Low
-2 │     250  Low
-3 │     300  Middle
-4 │    1000  High
-5 │     150  Low
-
+1    │     100  Low
+2    │     250  Low
+3    │     300  Middle
+4    │    1000  High
+5    │     150  Low
+```
 """
 function discretize(df::DataFrame, key, thresholds::Vector{T} where {T<:Real},
     newcol = "class_$(String(key))";
