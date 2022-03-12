@@ -59,7 +59,7 @@ If `vec_to` is shorter than `vec_from`, the last values are recoded to `other`.
 If you want to recode all irregular answers such as 'other:______' to `other`s, 
 use [`recode_others`](@ref).
 If you want to recode columns with common choices such as choices to matrix type 
-question, use [`recode_matrix`](@ref)
+question, use [`recode_matrix`](@ref).
 
 # Example
 
@@ -77,12 +77,12 @@ Row  │ item    newitem
 ```
 
 You can recode values stored in a column of vectors which can be generated using
-`split_ma_col!`(@ref).
+[`split_ma_col!`](@ref).
 
 !!! Note
 
     If you recode a column of vectors, single-value answer must be vectorized, 
-    as `split_ma_col!`(@ref) does.
+    as [`split_ma_col!`](@ref) does.
 
 
 # Example
@@ -99,7 +99,7 @@ Row  │ item                  newitem
 3    │ ["Tomato", "Pepper"]  ["Vegitable", "Spice"]
 ```
 
-See also `recode_others`(@ref), `recode_matrix`(@ref)
+See also [`recode_others`](@ref), [`recode_matrix`](@ref)
 """
 function recode(df::DataFrame, key, newkey,
     vec_from::AbstractVector, vec_to::T where {T<:StringOrEmptyVector} = [];
@@ -133,7 +133,7 @@ Row  │ item    newitem
 4    │ Pepper  other
 ```
 
-See also [`recode`](@ref)
+See also [`recode`](@ref) 
 
 """
 function recode_others(df::DataFrame, key, newkey,
@@ -188,7 +188,7 @@ Row  │ q1                 q2                 r_q1     r_q2
 5    │ Strongly disagree  Agree              b2b      t2b
 ```
 
-See also `recode`(@ref)
+See also [`recode`](@ref)
 """
 function recode_matrix(df::DataFrame, keys::Vector{Symbol},
     vec_from::Vector{String}, vec_to::T where {T<:StringOrEmptyVector} = [],
