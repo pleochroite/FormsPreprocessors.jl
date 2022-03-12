@@ -137,7 +137,7 @@ end
     end
 
     @testset "recode" begin
-        @test size(recode(df(), :bt, :newkey, ks, vs)) == (7,3)
+        @test size(recode(df(), :bt, :newkey, ks, vs)) == (7, 3)
         @test recode(df(), :bt, :newkey, ks, vs).newkey == df_cv.bt
         @test isequal(recode(df_nest_missing(), :bt, :newkey, ks, vs).newkey, df_nest_m_cv.bt)
         @test isequal(recode(df_nest_missing(), :bt, :newkey, ks, vs[1:3]).newkey,
@@ -157,14 +157,14 @@ end
 
     @testset "recode_others" begin
         @test recode_others(df(), :bt, :newbt, ks[1:2]).newbt ==
-         ["A", "A", "other", "other", "B", "B", "other"]
+              ["A", "A", "other", "other", "B", "B", "other"]
 
         d_ma = DataFrame(bt = ["A", ["A", "B", "O"], "O", ["AB", "A"], "B",
-            missing, ["B", "K"], "C", missing],
+                missing, ["B", "K"], "C", missing],
             rh = ["+", "-", missing, "+", "+", missing, "+", "+", missing])
-        @test isequal(recode_others(d_ma, :bt, :newbt, ks[1:2]).newbt, 
-            ["A", ["A", "B", "other"], "other", ["other", "A"], "B", 
-            missing, ["B", "other"], "other", missing])
+        @test isequal(recode_others(d_ma, :bt, :newbt, ks[1:2]).newbt,
+            ["A", ["A", "B", "other"], "other", ["other", "A"], "B",
+                missing, ["B", "other"], "other", missing])
     end
 
     @testset "flat" begin
@@ -190,12 +190,12 @@ end
     v_to = ["top2", "top2", "bottom2", "bottom2"]
 
     @testset "recode_matrix" begin
-        @test recode_matrix(df_matrix(), [:q1, :q2], v_from, v_to; prefix = "box")[:,3:4] ==
-            DataFrame(box_q1 = ["top2", "top2", "other", "top2", "bottom2"],
+        @test recode_matrix(df_matrix(), [:q1, :q2], v_from, v_to; prefix = "box")[:, 3:4] ==
+              DataFrame(box_q1 = ["top2", "top2", "other", "top2", "bottom2"],
             box_q2 = ["top2", "other", "bottom2", "bottom2", "top2"])
-        @test isequal(recode_matrix(df_matrix_missing(), [:q1, :q2], v_from, v_to; prefix = "box")[:,3:4],
+        @test isequal(recode_matrix(df_matrix_missing(), [:q1, :q2], v_from, v_to; prefix = "box")[:, 3:4],
             DataFrame(box_q1 = ["top2", missing, "other", "top2", "bottom2"],
-            box_q2 = ["top2", "other", missing, "bottom2", "top2"]))
+                box_q2 = ["top2", "other", missing, "bottom2", "top2"]))
         @test_throws ArgumentError recode_matrix(rename!(df_matrix_missing(), [:q1, :r_q1]), [:q1, :r_q1], v_from, v_to)
     end
 
@@ -223,44 +223,44 @@ end
     end
 
     function df_fruit()
-        DataFrame(fruit = [["apple","orange"], ["orange","melon","lemon"],
-                ["apple"], ["lemon","apple"], ["kiwi","melon"], ["kiwi","apple","orange"]],
+        DataFrame(fruit = [["apple", "orange"], ["orange", "melon", "lemon"],
+                ["apple"], ["lemon", "apple"], ["kiwi", "melon"], ["kiwi", "apple", "orange"]],
             price = [250, 890, 150, 240, 800, 350])
     end
 
     function df_fruit_missing()
-        DataFrame(fruit = [["apple","orange"], ["orange","melon","lemon"],
-                ["apple"], missing, ["kiwi","melon"], ["kiwi","apple","orange"]],
+        DataFrame(fruit = [["apple", "orange"], ["orange", "melon", "lemon"],
+                ["apple"], missing, ["kiwi", "melon"], ["kiwi", "apple", "orange"]],
             price = [250, 890, 150, missing, 800, 350])
     end
 
     function df_fruit_empty()
-        DataFrame(fruit = [["apple","orange"], ["orange","melon","lemon"],
-                ["apple"], ["lemon","apple"], [""], ["kiwi","apple","orange"]],
+        DataFrame(fruit = [["apple", "orange"], ["orange", "melon", "lemon"],
+                ["apple"], ["lemon", "apple"], [""], ["kiwi", "apple", "orange"]],
             price = [250, 890, 150, 150, 0, 350])
     end
 
     function df_fruit_missing_empty()
-        DataFrame(fruit = [["apple","orange"], ["orange","melon","lemon"],
-                [""], ["lemon","apple"], missing, ["kiwi","apple","orange"]],
+        DataFrame(fruit = [["apple", "orange"], ["orange", "melon", "lemon"],
+                [""], ["lemon", "apple"], missing, ["kiwi", "apple", "orange"]],
             price = [250, 890, 0, 240, missing, 350])
     end
 
     function df_fruit_multibyte()
-        DataFrame(果物 = [["りんご","みかん"], ["みかん","メロン","レモン"],
-                [""], ["レモン","りんご"], missing, ["キウィ","りんご","みかん"]],
+        DataFrame(果物 = [["りんご", "みかん"], ["みかん", "メロン", "レモン"],
+                [""], ["レモン", "りんご"], missing, ["キウィ", "りんご", "みかん"]],
             価格 = [250, 890, 0, 240, missing, 350])
     end
 
     @testset "answers_to_dummy" begin
         @test FormsPreprocessors.answers_to_dummy("apple", df_fruit().fruit) == ["yes", "no", "yes", "yes", "no", "yes"]
-        @test FormsPreprocessors.answers_to_dummy("orange", df_fruit().price) == 
-            ["no", "no", "no", "no", "no", "no"]
+        @test FormsPreprocessors.answers_to_dummy("orange", df_fruit().price) ==
+              ["no", "no", "no", "no", "no", "no"]
         @test_throws ArgumentError FormsPreprocessors.answers_to_dummy("kiwi", df_fruit().store)
         @test isequal(FormsPreprocessors.answers_to_dummy("orange", df_fruit_missing().fruit),
             ["yes", "yes", "no", missing, "no", "yes"])
         @test FormsPreprocessors.answers_to_dummy("kiwi", df_fruit_empty().fruit) ==
-            ["no", "no", "no", "no", "no", "yes"]
+              ["no", "no", "no", "no", "no", "yes"]
         @test isequal(FormsPreprocessors.answers_to_dummy("orange", df_fruit_missing_empty().fruit),
             ["yes", "yes", "no", "no", missing, "yes"])
         @test isequal(FormsPreprocessors.answers_to_dummy("みかん", df_fruit_multibyte().果物),
@@ -303,7 +303,7 @@ end
             ordered_answers = ["みかん", "りんご", "レモン", "メロン", "キウィ", "あんず"])
         @test size(r_multibyte) == (6, 8)
         @test all(x -> ismissing(x), r_multibyte[5, 3:end])
-        @test collect(r_multibyte[1, :]) == [["りんご","みかん"], 250, "yes", "yes", "no", "no", "no", "no"]
+        @test collect(r_multibyte[1, :]) == [["りんご", "みかん"], 250, "yes", "yes", "no", "no", "no", "no"]
         @test all(x -> (x == "no"), r_multibyte[3, 3:end])
         @test isequal(r_multibyte[:, 8], ["no", "no", "no", "no", missing, "no"])
 
