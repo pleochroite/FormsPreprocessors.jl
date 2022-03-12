@@ -6,4 +6,9 @@ makedocs(
         "Home" => "index.md",
         "References" => "references.md"
     ],
-    modules = [FormsPreprocessors])
+    modules = [FormsPreprocessors]
+    )
+
+deploydocs(
+    repo = "github.com/pleochroite/FormsPreprocessors.jl.git"
+)
