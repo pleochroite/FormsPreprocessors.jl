@@ -1,0 +1,19 @@
+---
+title: Tutorial
+author: schigy
+date: 2022-03-12
+---
+
+## Hello
+
+FormsPreprocessors is a tiny preprocessing tool for questionnaire data (such as one obtained using 
+Google Forms) to convert 'raw' data to ready-to-analyze style.
+It provides functions of recoding, one-hot encoding, concatenating columns, and splitting multiple 
+choice responses.
+
+```julia; term = true
+using DataFrames, DataFramesMeta, Chain, CSV
+using FormsPreprocessors
+
+d = CSV.read("./example/sample_data.csv", DataFrame)
+```
