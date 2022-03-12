@@ -48,7 +48,7 @@ function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other 
     conversion_dict(vec1, v)
 end
 
-"""
+@doc text"""
     recode(df, key, newkey, vec_from, vec_to=[]; other="other")
 
 Recodes values in `key` column with values in `vec_from` into corresponding `vec_to` values, 
@@ -81,8 +81,8 @@ You can recode values stored in a column of vectors which can be generated using
 `split_ma_col!`(@ref).
 
 !!! Note
-If you recode a column of vectors, single-value answer must be vectorized, 
-as `split_ma_col!`(@ref) does.
+    If you recode a column of vectors, single-value answer must be vectorized, 
+    as `split_ma_col!`(@ref) does.
 
 
 # Example
