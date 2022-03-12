@@ -80,6 +80,7 @@ You can recode values stored in a column of vectors which can be generated using
 `split_ma_col!`(@ref).
 
 !!! Note
+
     If you recode a column of vectors, single-value answer must be vectorized, 
     as `split_ma_col!`(@ref) does.
 
