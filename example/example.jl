@@ -13,13 +13,13 @@ ns = Symbol.(names(d))
 
 cvd = @chain d begin
     # First of all, split MA answers
-    split_ma_col!(_, :Fruit)
-    split_ma_col!(_, :Alcohol)
-    split_ma_col!(_, :Studied_English)
-    split_ma_col!(_, :Studied_Math)
-    split_ma_col!(_, :Studied_Science)
-    split_ma_col!(_, :Studied_Arts)
-    split_ma_col!(_, :Studied_Programming)
+    split_mc_col!(_, :Fruit)
+    split_mc_col!(_, :Alcohol)
+    split_mc_col!(_, :Studied_English)
+    split_mc_col!(_, :Studied_Math)
+    split_mc_col!(_, :Studied_Science)
+    split_mc_col!(_, :Studied_Arts)
+    split_mc_col!(_, :Studied_Programming)
     # recode irregular answers to "other"
     recode_others(_, :Gender, :newGender, ["Male", "Female"])
     recode_others(_, :Alcohol, :newAlcohol, 

@@ -203,23 +203,23 @@ end
     qbf = "A quick brown fox jumps over the lazy dog."
     sent_multibyte = "天下後世をいかにせばやなど、何彼につけて呼ぶ人あるを見たる時、こは自己をいかにせばやの意なるべしと、われは思へり。"
 
-    @testset "split_ma" begin
-        @test FormsPreprocessors.split_ma("ab,cd,e", ",") == ["ab", "cd", "e"]
-        @test FormsPreprocessors.split_ma(sent) == ["abc", "def", "ghi", "jklm"]
-        @test FormsPreprocessors.split_ma("abcdefghij", "fg") == ["abcde", "hij"]
-        @test FormsPreprocessors.split_ma(qbf) == [qbf]
-        @test FormsPreprocessors.split_ma(sent_multibyte, "、") ==
+    @testset "split_mc" begin
+        @test FormsPreprocessors.split_mc("ab,cd,e", ",") == ["ab", "cd", "e"]
+        @test FormsPreprocessors.split_mc(sent) == ["abc", "def", "ghi", "jklm"]
+        @test FormsPreprocessors.split_mc("abcdefghij", "fg") == ["abcde", "hij"]
+        @test FormsPreprocessors.split_mc(qbf) == [qbf]
+        @test FormsPreprocessors.split_mc(sent_multibyte, "、") ==
               ["天下後世をいかにせばやなど", "何彼につけて呼ぶ人あるを見たる時",
             "こは自己をいかにせばやの意なるべしと", "われは思へり。"]
-        @test FormsPreprocessors.split_ma("", ",") == [""]
-        @test FormsPreprocessors.split_ma(";;;;") == ["", "", "", "", ""]
-        @test ismissing(FormsPreprocessors.split_ma(missing))
-        @test_throws MethodError FormsPreprocessors.split_ma(43, ",")
-        @test_throws MethodError FormsPreprocessors.split_ma(:symbol, ",")
-        @test_throws MethodError FormsPreprocessors.split_ma(["ABCD", ","])
-        @test isequal(FormsPreprocessors.split_ma.(["A;B;C;D", "EFG", missing]),
+        @test FormsPreprocessors.split_mc("", ",") == [""]
+        @test FormsPreprocessors.split_mc(";;;;") == ["", "", "", "", ""]
+        @test ismissing(FormsPreprocessors.split_mc(missing))
+        @test_throws MethodError FormsPreprocessors.split_mc(43, ",")
+        @test_throws MethodError FormsPreprocessors.split_mc(:symbol, ",")
+        @test_throws MethodError FormsPreprocessors.split_mc(["ABCD", ","])
+        @test isequal(FormsPreprocessors.split_mc.(["A;B;C;D", "EFG", missing]),
             [["A", "B", "C", "D"], ["EFG"], missing])
-        @test_throws MethodError FormsPreprocessors.split_ma([missing])
+        @test_throws MethodError FormsPreprocessors.split_mc([missing])
     end
 
     function df_fruit()

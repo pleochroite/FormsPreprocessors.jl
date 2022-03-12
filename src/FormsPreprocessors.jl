@@ -77,12 +77,12 @@ Row  │ item    newitem
 ```
 
 You can recode values stored in a column of vectors which can be generated using
-[`split_ma_col!`](@ref).
+[`split_mc_col!`](@ref).
 
 !!! Note
 
     If you recode a column of vectors, single-value answer must be vectorized, 
-    as [`split_ma_col!`](@ref) does.
+    as [`split_mc_col!`](@ref) does.
 
 
 # Example
@@ -213,12 +213,12 @@ function recode_matrix(df::DataFrame, keys::Vector{Symbol},
 end
 
 
-function split_ma(x, delim = ";")
+function split_mc(x, delim = ";")
     ismissing(x) ? missing : split(x, delim)
 end
 
 """
-    split_ma_col!(df, key; delim=";")
+    split_mc_col!(df, key; delim=";")
 
 Mutates `key` columns with values of "`delim`-concatenated" MA answers into column with vectors.
 
@@ -226,7 +226,7 @@ Mutates `key` columns with values of "`delim`-concatenated" MA answers into colu
 
 ```
 julia> df = DataFrame(item=["Apple;Orange", "Tomato", "Tomato;Pepper"])
-julia> split_ma_col!(df, :item)
+julia> split_mc_col!(df, :item)
 3x1 DataFrame
 Row  │ item                              
      │ Array…                            
@@ -236,8 +236,8 @@ Row  │ item
 3    │ ["Tomato", "Pepper"]
 ```
 """
-function split_ma_col!(df::DataFrame, key; delim = ";")
-    return transform!(df, key => ByRow(x -> split_ma.(x, delim)) => key)
+function split_mc_col!(df::DataFrame, key; delim = ";")
+    return transform!(df, key => ByRow(x -> split_mc.(x, delim)) => key)
 end
 
 function answers_to_dummy(answer, col)
@@ -257,7 +257,7 @@ end
     onehot(df, key; ordered_answers=[])
 
 Performs one-hot encoding on `key` column.
-The column is expected to be of vectors, as `split_ma_col!` generates.
+The column is expected to be of vectors, as `split_mc_col!` generates.
 If you want to sort columns generated, specify `ordered_answers`.
 If not `ordered_answers` specified, columns are ordered by value appearance.
 
@@ -437,5 +437,5 @@ function find_range(val::MaybeReal, ranges::Vector{Tuple{T,P}} where {T<:Real,P<
 end
 
 
-export split_ma_col!, recode, recode_matrix, recode_others, onehot, discretize, direct_product
+export split_mc_col!, recode, recode_matrix, recode_others, onehot, discretize, direct_product
 end
