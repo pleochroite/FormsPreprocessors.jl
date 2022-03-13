@@ -75,7 +75,7 @@ It recodes as `vec_from[1] => vec_to[1], vec_from[2] => vec_to[2], ...`. If `vec
 Therefore, all appeared values but in `vec_from` **remain unchanged**, which is contrary to preceding `recode_others`.
 
 ``` julia
-recode(_, :Age, :newAge, ["-19", "20-34", "35-49", "50-"], ["Teen", "Young", "Middle", "Old"])[:,:newAge]
+recode(d, :Age, :newAge, ["-19", "20-34", "35-49", "50-"], ["Teen", "Young", "Middle", "Old"])[:,:newAge]
 ```
 
 ### Recoding matrix-type single responses
@@ -83,7 +83,7 @@ recode(_, :Age, :newAge, ["-19", "20-34", "35-49", "50-"], ["Teen", "Young", "Mi
 `recode_matrix` supports recoding multiple columns using identical conversion dictionary. 
 
 ``` julia
-recode_matrix(_, ns[7:10], 
+recode_matrix(d, ns[7:10], 
     ["Within a week", "Within a month", "Within 3 months", "More than 3 months ago", "Never"],
     ["Recent", "Recent", "Silent", "Silent", "Never"])[:,ns[7:10]]
 ```
@@ -93,7 +93,7 @@ recode_matrix(_, ns[7:10],
 You can obtain concatenation of two responses, such as "Male-Young", "Female-Old", using `direct_product`. 
 
 ```julia
-direct_product(_, :newGender, :newAge, :VRSection; delim="-")
+direct_product(d, :newGender, :newAge, :VRSection; delim="-")
 ```
 
 ### One-hot encoding
@@ -105,11 +105,12 @@ Now, MC responses are stored in columns in vector-form, which need to be encoded
 When keyword argument `ordered_answers` is not specified, the order of resulting columns is "appearance order", which is often undesirable. 
 
 ```julia
-onehot(_, :newAlcohol; 
-    ordered_answers = ["Beer", "Cidre", "Cognac", "Wine", "Whisky", "other", "None"])
-onehot(_, :newFruit; 
-    ordered_answers=  ["Apple", "Apricot", "Grape", "Lemon", 
-        "Melon", "Orange", "Peach", "other", "None"])
+@chain d begin
+    onehot(_, :newAlcohol; 
+        ordered_answers = ["Beer", "Cidre", "Cognac", "Wine", "Whisky", "other", "None"])
+    onehot(_, :newFruit; 
+        ordered_answers=  ["Apple", "Apricot", "Grape", "Lemon",  "Melon", "Orange", "Peach", "other", "None"])
+end
 ```
 
 ### Classifying numerical responses
@@ -120,5 +121,5 @@ So, the length of class names should be `length(thresholds) + 1`.
 If class names not specified, they will be concatenation of border values.
 
 ``` julia
-discretize(_, :Price, [200, 600, 1000]; newcodes=["N", "L", "M", "H"])
+discretize(d_a, :Price, [200, 600, 1000]; newcodes=["N", "L", "M", "H"])
 ```
