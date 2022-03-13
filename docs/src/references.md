@@ -4,7 +4,10 @@ DocTestSetup = quote
     using FormsPreprocessors
 end
 ```
+# FormsPreprocessors Reference
 
+```@contents
+```
 
 ```@autodocs
 Modules=[FormsPreprocessors]
