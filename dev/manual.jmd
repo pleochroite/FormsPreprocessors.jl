@@ -1,0 +1,52 @@
+# Maunual
+
+FormsPreprocessors is a tiny preprocessing tool for questionnaire data (such as one obtained using Google Forms) to convert 'raw' data to ready-to-analyze style. 
+It provides functions of recoding, one-hot encoding, concatenating columns, and splitting multiple choice(MC) responses. Let's see how to use it.
+
+### Reading a Data
+
+As FormsPreprocessors is built on the sholder of DataFrames.jl, read data into a DataFrame.
+
+```julia; term = true
+using DataFrames, DataFramesMeta, Chain, CSV
+using FormsPreprocessors
+
+d = CSV.read("../../example/sample_data.csv", DataFrame)
+```
+
+Google Forms data often contains whitespaces and brackets in field names, renaming field names is recommended.
+
+```julia; term = false
+rename!(d, ["timestamp", "Gender", "Age", "Alcohol", "Fruit", "Price",
+    "Lastvisit_SM", "Lastvisit_CVS", "Lastvisit_DS", "LastVisit_Glos",
+    "Studied_English", "Studied_Math", "Studied_Science", "Studied_Arts", "Studied_Programming"])
+ns = Symbol.(names(d))
+```
+
+### Split MC answers
+
+MC response is concatenated with ";" in Google Forms data as you see in Alcohol column. 
+We need to split these responses into vectors. 
+
+``` julia
+split_mc_col!(d, :Alcohol)
+```
+
+Of course, you can use pipe so to split all MC columns.
+
+``` julia
+@chain d begin
+    split_mc_col!(_, :Fruit)
+    split_mc_col!(_, :Alcohol)
+    split_mc_col!(_, :Studied_English)
+    split_mc_col!(_, :Studied_Math)
+    split_mc_col!(_, :Studied_Science)
+    split_mc_col!(_, :Studied_Arts)
+    split_mc_col!(_, :Studied_Programming)
+end
+```
+
+### Recoding open responses
+
+
+
