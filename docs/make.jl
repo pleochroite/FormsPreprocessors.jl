@@ -1,7 +1,7 @@
 using Documenter, FormsPreprocessors
 
 using Weave
-weave("./src/tutorial.jmd", doctype="github")
+weave("./docs/src/tutorial.jmd", doctype="github")
 
 makedocs(
     sitename = "FormsPreprocessors",
