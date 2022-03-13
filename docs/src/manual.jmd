@@ -3,7 +3,7 @@
 FormsPreprocessors is a tiny preprocessing tool for questionnaire data (such as one obtained using Google Forms) to convert 'raw' data to ready-to-analyze style. 
 It provides functions of recoding, one-hot encoding, concatenating columns, and splitting multiple choice(MC) responses. Let's see how to use it.
 
-### Reading a Data
+## Reading a Data
 
 As FormsPreprocessors is built on the sholder of DataFrames.jl, read data into a DataFrame.
 
@@ -23,7 +23,7 @@ rename!(d, ["timestamp", "Gender", "Age", "Alcohol", "Fruit", "Price",
 ns = Symbol.(names(d))
 ```
 
-### Split MC answers
+## Split MC answers
 
 MC response is concatenated with ";" in Google Forms data as you see in the Alcohol column. 
 First, we need to split these responses into vectors for the processes following.
@@ -54,7 +54,7 @@ end
     
 
 
-### Recoding open responses
+## Recoding open responses
 
 Next, it is typical to recode open responses to one value, say, "other", because open responses for "other:______" form are stored as respondent input. 
 Note that fourth argument for `recode_others` is a vector of responses which you want to **keep unchanged**. All appeared values but in the vector will be recoded into `other="other"`.
@@ -68,7 +68,7 @@ Note that fourth argument for `recode_others` is a vector of responses which you
 end
 ```
 
-### Recoding choices to arbitrary values
+## Recoding choices to arbitrary values
 
 If you want to recode values to new ones, use `recode` of which fourth argument `vec_from` is a vector of raw values, and fifth `vec_to` is a vector of recoded ones.
 It recodes as `vec_from[1] => vec_to[1], vec_from[2] => vec_to[2], ...`. If `vec_to` is shorter than `vec_from`, the leftovers in `vec_from` are recoded to `other`.
@@ -78,7 +78,7 @@ Therefore, all appeared values but in `vec_from` **remain unchanged**, which is 
 recode(d, :Age, :newAge, ["-19", "20-34", "35-49", "50-"], ["Teen", "Young", "Middle", "Old"])[:,:newAge]
 ```
 
-### Recoding matrix-type single responses
+## Recoding matrix-type single responses
 
 `recode_matrix` supports recoding multiple columns using identical conversion dictionary. 
 
@@ -88,7 +88,7 @@ recode_matrix(d, ns[7:10],
     ["Recent", "Recent", "Silent", "Silent", "Never"])[:,ns[7:10]]
 ```
 
-### Concatenating multiple values
+## Concatenating multiple values
 
 You can obtain concatenation of two responses, such as "Male-Young", "Female-Old", using `direct_product`. 
 
@@ -96,7 +96,7 @@ You can obtain concatenation of two responses, such as "Male-Young", "Female-Old
 direct_product(d, :newGender, :newAge, :VRSection; delim="-")
 ```
 
-### One-hot encoding
+## One-hot encoding
 
 Now, MC responses are stored in columns in vector-form, which need to be encoded in order for us to visualize and analyze. One hot encoding is one of the most simple way of encoding. One column of N possible responses is encoded to N columns of yes/no values.
 
@@ -113,7 +113,7 @@ When keyword argument `ordered_answers` is not specified, the order of resulting
 end
 ```
 
-### Classifying numerical responses
+## Classifying numerical responses
 
 Function `discretize` offers classification of numerical response.
 Specified border values as third argument, it automatically converts to the ranges be (-Inf, `thresholds[1]`), [`thresholds[1]`, `thresholds[2]`), ..., [`thresholds[end]`, Inf). 
