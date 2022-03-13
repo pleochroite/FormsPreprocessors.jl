@@ -1,20 +1,24 @@
----
-title: Tutorial
-author: schigy
-date: 2022-03-12
----
-
-## Overview
+# Overview
 
 FormsPreprocessors is a tiny preprocessing tool for questionnaire data (such as one obtained using Google Forms) to convert 'raw' data to ready-to-analyze style. 
 It provides functions of recoding, one-hot encoding, concatenating columns, and splitting multiple choice(MC) responses.
+
+# Tutorial
+
+## Reading a Data
+
+As FormsPreprocessors is built on the sholder of DataFrames.jl, read data into a DataFrame.
 
 ```julia; term = true
 using DataFrames, DataFramesMeta, Chain, CSV
 using FormsPreprocessors
 
 d = CSV.read("../../example/sample_data.csv", DataFrame)
+```
 
+Google Forms data often contains whitespaces and brackets in field names, renaming field names is recommended.
+
+```julia; term = false
 rename!(d, ["timestamp", "Gender", "Age", "Alcohol", "Fruit", "Price",
     "Lastvisit_SM", "Lastvisit_CVS", "Lastvisit_DS", "LastVisit_Glos",
     "Studied_English", "Studied_Math", "Studied_Science", "Studied_Arts", "Studied_Programming"])
@@ -23,4 +27,10 @@ ns = Symbol.(names(d))
 
 ## Split MC answers
 
-As MC response is concatenated with ";" in the Google Forms CSV data,  
+MC response is concatenated with ";" in Google Forms data as you see in Alcohol column. 
+We need to split these responses into vectors. 
+
+``` julia
+split_mc_col!(d, :Alcohol)
+```
+

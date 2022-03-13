@@ -7,7 +7,7 @@ makedocs(
     sitename = "FormsPreprocessors",
     pages = Any[
         "Home" => "index.md",
-        "Tutorial" => "tutorial.md",
+        "Manual" => "manual.md",
         "References" => "references.md"
     ],
     modules = [FormsPreprocessors]

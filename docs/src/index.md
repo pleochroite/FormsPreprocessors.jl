@@ -2,6 +2,9 @@
 
 A preprocessor for Google Forms CSV.
 
+```@contents
+```
+
 ## Package Features
 
 - Recodes values into new ones, including answers into "others"

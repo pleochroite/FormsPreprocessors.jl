@@ -6,8 +6,7 @@ end
 ```
 # FormsPreprocessors Reference
 
-```@contents
-```
+
 
 ```@autodocs
 Modules=[FormsPreprocessors]
