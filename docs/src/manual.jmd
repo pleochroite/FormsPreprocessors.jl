@@ -1,11 +1,9 @@
-# Overview
+# Maunual
 
 FormsPreprocessors is a tiny preprocessing tool for questionnaire data (such as one obtained using Google Forms) to convert 'raw' data to ready-to-analyze style. 
-It provides functions of recoding, one-hot encoding, concatenating columns, and splitting multiple choice(MC) responses.
+It provides functions of recoding, one-hot encoding, concatenating columns, and splitting multiple choice(MC) responses. Let's see how to use it.
 
-# Tutorial
-
-## Reading a Data
+### Reading a Data
 
 As FormsPreprocessors is built on the sholder of DataFrames.jl, read data into a DataFrame.
 
@@ -25,7 +23,7 @@ rename!(d, ["timestamp", "Gender", "Age", "Alcohol", "Fruit", "Price",
 ns = Symbol.(names(d))
 ```
 
-## Split MC answers
+### Split MC answers
 
 MC response is concatenated with ";" in Google Forms data as you see in Alcohol column. 
 We need to split these responses into vectors. 
@@ -33,4 +31,22 @@ We need to split these responses into vectors.
 ``` julia
 split_mc_col!(d, :Alcohol)
 ```
+
+Of course, you can use pipe so to split all MC columns.
+
+``` julia
+@chain d begin
+    split_mc_col!(_, :Fruit)
+    split_mc_col!(_, :Alcohol)
+    split_mc_col!(_, :Studied_English)
+    split_mc_col!(_, :Studied_Math)
+    split_mc_col!(_, :Studied_Science)
+    split_mc_col!(_, :Studied_Arts)
+    split_mc_col!(_, :Studied_Programming)
+end
+```
+
+### Recoding open responses
+
+
 
