@@ -1,4 +1,4 @@
-# Maunual
+# Manual
 
 FormsPreprocessors is a tiny preprocessing tool for questionnaire data (such as one obtained using Google Forms) to convert 'raw' data to ready-to-analyze style. 
 It provides functions of recoding, one-hot encoding, concatenating columns, and splitting multiple choice(MC) responses. Let's see how to use it.
@@ -14,7 +14,7 @@ using FormsPreprocessors
 d = CSV.read("../../example/sample_data.csv", DataFrame)
 ```
 
-Google Forms data often contains whitespaces and brackets in field names, renaming field names is recommended.
+Google Forms data often contains whitespaces and brackets in field names, we recommend to rename them.
 
 ```julia; term = false
 rename!(d, ["timestamp", "Gender", "Age", "Alcohol", "Fruit", "Price",
@@ -25,17 +25,19 @@ ns = Symbol.(names(d))
 
 ### Split MC answers
 
-MC response is concatenated with ";" in Google Forms data as you see in Alcohol column. 
-We need to split these responses into vectors. 
+MC response is concatenated with ";" in Google Forms data as you see in the Alcohol column. 
+First, we need to split these responses into vectors for the processes following.
 
 ``` julia
-split_mc_col!(d, :Alcohol)
+d_a = split_mc_col!(d, :Alcohol)
 ```
 
 Of course, you can use pipe so to split all MC columns.
+Note that `split_mc_col!` is mutating. 
+Applying `split_mc_col!` multiple times causes unwanted effects.
 
 ``` julia
-@chain d begin
+d_b = @chain d begin
     split_mc_col!(_, :Fruit)
     split_mc_col!(_, :Alcohol)
     split_mc_col!(_, :Studied_English)
@@ -46,7 +48,77 @@ Of course, you can use pipe so to split all MC columns.
 end
 ```
 
+!!! Tips
+
+    Functions other than `split_mc_col!` append new columns to original DataFrame.
+    
+
+
 ### Recoding open responses
 
+Next, it is typical to recode open responses to one value, say, "other", because open responses for "other:______" form are stored as respondent input. 
+Note that fourth argument for `recode_others` is a vector of responses which you want to **keep unchanged**. All appeared values but in the vector will be recoded into `other="other"`.
 
+```julia
+@chain d begin
+    recode_others(_, :Alcohol, :newAlcohol, 
+        ["Beer", "Cidre", "Cognac", "Wine", "Whisky", "None"])
+    recode_others(_, :Fruit, :newFruit, 
+        ["Apple", "Apricot", "Grape", "Lemon", "Melon", "Orange", "Peach", "None"])
+end
+```
 
+### Recoding choices to arbitrary values
+
+If you want to recode values to new ones, use `recode` of which fourth argument `vec_from` is a vector of raw values, and fifth `vec_to` is a vector of recoded ones.
+It recodes as `vec_from[1] => vec_to[1], vec_from[2] => vec_to[2], ...`. If `vec_to` is shorter than `vec_from`, the leftovers in `vec_from` are recoded to `other`.
+Therefore, all appeared values but in `vec_from` **remain unchanged**, which is contrary to preceding `recode_others`.
+
+``` julia
+recode(_, :Age, :newAge, ["-19", "20-34", "35-49", "50-"], ["Teen", "Young", "Middle", "Old"])[:,:newAge]
+```
+
+### Recoding matrix-type single responses
+
+`recode_matrix` supports recoding multiple columns using identical conversion dictionary. 
+
+``` julia
+recode_matrix(_, ns[7:10], 
+    ["Within a week", "Within a month", "Within 3 months", "More than 3 months ago", "Never"],
+    ["Recent", "Recent", "Silent", "Silent", "Never"])[:,ns[7:10]]
+```
+
+### Concatenating multiple values
+
+You can obtain concatenation of two responses, such as "Male-Young", "Female-Old", using `direct_product`. 
+
+```julia
+direct_product(_, :newGender, :newAge, :VRSection; delim="-")
+```
+
+### One-hot encoding
+
+Now, MC responses are stored in columns in vector-form, which need to be encoded in order for us to visualize and analyze. One hot encoding is one of the most simple way of encoding. One column of N possible responses is encoded to N columns of yes/no values.
+
+!!! Tips
+
+When keyword argument `ordered_answers` is not specified, the order of resulting columns is "appearance order", which is often undesirable. 
+
+```julia
+onehot(_, :newAlcohol; 
+    ordered_answers = ["Beer", "Cidre", "Cognac", "Wine", "Whisky", "other", "None"])
+onehot(_, :newFruit; 
+    ordered_answers=  ["Apple", "Apricot", "Grape", "Lemon", 
+        "Melon", "Orange", "Peach", "other", "None"])
+```
+
+### Classifying numerical responses
+
+Function `discretize` offers classification of numerical response.
+Specified border values as third argument, it automatically converts to the ranges be (-Inf, `thresholds[1]`), [`thresholds[1]`, `thresholds[2]`), ..., [`thresholds[end]`, Inf). 
+So, the length of class names should be `length(thresholds) + 1`.
+If class names not specified, they will be concatenation of border values.
+
+``` julia
+discretize(_, :Price, [200, 600, 1000]; newcodes=["N", "L", "M", "H"])
+```
