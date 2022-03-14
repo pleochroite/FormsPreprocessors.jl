@@ -52,7 +52,7 @@ Of course, you can use pipe so to split all MC columns.
 end
 ```
 
-!!! note ""
+!!! note "Note"
     Note that `split_mc_col!` mutates the column specified.
     When `split_mc_col!` is applied to a vectorized column, the column remains unchanged.
     Functions other than `split_mc_col!` append new columns to original DataFrame.
@@ -92,9 +92,9 @@ recode_matrix(d, ns[7:10],
 
 ## Concatenating multiple values
 
-You can obtain concatenation of two responses, such as "Male-Young", "Female-Old", using `direct_product`. 
+Using `direct_product`, you can obtain concatenation of two columns, such as "Male-Young", and "Female-Old", 
 
-```julia
+```julia; results = "hidden"
 direct_product(d, :Gender, :Age, :GenderxAge; delim="-")
 ```
 
