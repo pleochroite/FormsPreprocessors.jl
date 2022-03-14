@@ -45,10 +45,10 @@ Of course, you can use pipe so to split all MC columns.
 end
 ```
 
-Note that `split_mc_col!` is mutating. 
-When `split_mc_col!` is applied to a vectorized column, original dataframe will be returned.
-
-!!! tips Functions other than `split_mc_col!` append new columns to original DataFrame.
+!!! note ""
+    Note that `split_mc_col!` mutates the column specified.
+    When `split_mc_col!` is applied to a vectorized column, the column remains unchanged.
+    Functions other than `split_mc_col!` append new columns to original DataFrame.
 
 
 ## Recoding open responses
@@ -95,7 +95,8 @@ direct_product(d, :Gender, :Age, :GenderxAge; delim="-")
 
 Now, MC responses are stored in columns in vector-form, which need to be encoded in order for us to visualize and analyze. One hot encoding is one of the most simple way of encoding. One column of N possible responses is encoded to N columns of yes/no values.
 
-!!! tips When keyword argument `ordered_answers` is not specified, the order of resulting columns is "appearance order", which is often undesirable. 
+!!! warning
+    When keyword argument `ordered_answers` is not specified, the order of resulting columns is "appearance order", which is often undesirable. 
 
 ```julia; results = "hidden"
     onehot(d, :newAlcohol; 
