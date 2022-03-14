@@ -34,7 +34,7 @@ d_a = split_mc_col!(d, :Alcohol)
 
 Of course, you can use pipe so to split all MC columns.
 Note that `split_mc_col!` is mutating. 
-Applying `split_mc_col!` multiple times causes unwanted effects.
+When `split_mc_col!` is applied to a vectorized column, original dataframe is returned.
 
 ``` julia
 d_b = @chain d begin

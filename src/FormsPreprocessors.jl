@@ -237,7 +237,13 @@ Row  │ item
 ```
 """
 function split_mc_col!(df::DataFrame, key; delim = ";")
-    return transform!(df, key => ByRow(x -> split_mc.(x, delim)) => key)
+    # if col is already split, returns df itself
+    if all(x -> typeof(x) <: Union{AbstractVector, Missing}, df[:,key])
+        @warn "Column $(key) seems to be already split. Original dataframe is returned."
+        return df
+    else
+        return transform!(df, key => ByRow(x -> split_mc.(x, delim)) => key)
+    end
 end
 
 function answers_to_dummy(answer, col)

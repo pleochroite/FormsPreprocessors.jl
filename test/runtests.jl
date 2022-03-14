@@ -222,6 +222,21 @@ end
         @test_throws MethodError FormsPreprocessors.split_mc([missing])
     end
 
+    function d_split()
+        DataFrame(v1 = ["apple;orange", "melon;lemon"], 
+            v2 = [missing, "lettuce;beat"],
+            v3 = [["apple"], ["orange", "lemon"]],
+            v4 = [["tomato", "cucumber"], missing])
+    end
+
+    @testset "split_mc_col!" begin
+        @test split_mc_col!(d_split(), :v1).v1 == [["apple", "orange"], ["melon", "lemon"]]
+        @test isequal(split_mc_col!(d_split(), :v2).v2, [missing, ["lettuce", "beat"]])
+        @test isequal(split_mc_col!(d_split(), :v3), d_split())
+        @test isequal(split_mc_col!(d_split(), :v4), d_split())
+    end
+
+
     function df_fruit()
         DataFrame(fruit = [["apple", "orange"], ["orange", "melon", "lemon"],
                 ["apple"], ["lemon", "apple"], ["kiwi", "melon"], ["kiwi", "apple", "orange"]],
