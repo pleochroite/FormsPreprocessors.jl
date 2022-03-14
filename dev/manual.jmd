@@ -33,8 +33,6 @@ d_a = split_mc_col!(d, :Alcohol)
 ```
 
 Of course, you can use pipe so to split all MC columns.
-Note that `split_mc_col!` is mutating. 
-When `split_mc_col!` is applied to a vectorized column, original dataframe is returned.
 
 ``` julia
 d_b = @chain d begin
@@ -48,16 +46,17 @@ d_b = @chain d begin
 end
 ```
 
-!!! Tips
+Note that `split_mc_col!` is mutating. 
+When `split_mc_col!` is applied to a vectorized column, original dataframe will be returned.
 
-    Functions other than `split_mc_col!` append new columns to original DataFrame.
-    
+!!! tips Functions other than `split_mc_col!` append new columns to original DataFrame.
 
 
 ## Recoding open responses
 
 Next, it is typical to recode open responses to one value, say, "other", because open responses for "other:______" form are stored as respondent input. 
-Note that fourth argument for `recode_others` is a vector of responses which you want to **keep unchanged**. All appeared values but in the vector will be recoded into `other="other"`.
+
+Note that fourth argument for `recode_others` is a vector of responses which you want to *keep unchanged*. All appeared values but in the vector will be recoded into `other="other"`.
 
 ```julia
 @chain d begin
@@ -72,10 +71,10 @@ end
 
 If you want to recode values to new ones, use `recode` of which fourth argument `vec_from` is a vector of raw values, and fifth `vec_to` is a vector of recoded ones.
 It recodes as `vec_from[1] => vec_to[1], vec_from[2] => vec_to[2], ...`. If `vec_to` is shorter than `vec_from`, the leftovers in `vec_from` are recoded to `other`.
-Therefore, all appeared values but in `vec_from` **remain unchanged**, which is contrary to preceding `recode_others`.
+Therefore, all appeared values but in `vec_from` *remain unchanged*, which is contrary to preceding `recode_others`.
 
 ``` julia
-recode(d, :Age, :newAge, ["-19", "20-34", "35-49", "50-"], ["Teen", "Young", "Middle", "Old"])[:,:newAge]
+recode(d, :Age, :newAge, ["-19", "20-34", "35-49", "50-"], ["Teen", "Young", "Middle", "Old"])
 ```
 
 ## Recoding matrix-type single responses
@@ -85,7 +84,7 @@ recode(d, :Age, :newAge, ["-19", "20-34", "35-49", "50-"], ["Teen", "Young", "Mi
 ``` julia
 recode_matrix(d, ns[7:10], 
     ["Within a week", "Within a month", "Within 3 months", "More than 3 months ago", "Never"],
-    ["Recent", "Recent", "Silent", "Silent", "Never"])[:,ns[7:10]]
+    ["Recent", "Recent", "Silent", "Silent", "Never"])
 ```
 
 ## Concatenating multiple values
@@ -93,16 +92,14 @@ recode_matrix(d, ns[7:10],
 You can obtain concatenation of two responses, such as "Male-Young", "Female-Old", using `direct_product`. 
 
 ```julia
-direct_product(d, :newGender, :newAge, :VRSection; delim="-")
+direct_product(d, :Gender, :Age, :GenderxAge; delim="-")
 ```
 
 ## One-hot encoding
 
 Now, MC responses are stored in columns in vector-form, which need to be encoded in order for us to visualize and analyze. One hot encoding is one of the most simple way of encoding. One column of N possible responses is encoded to N columns of yes/no values.
 
-!!! Tips
-
-When keyword argument `ordered_answers` is not specified, the order of resulting columns is "appearance order", which is often undesirable. 
+!!! tips When keyword argument `ordered_answers` is not specified, the order of resulting columns is "appearance order", which is often undesirable. 
 
 ```julia
 @chain d begin
