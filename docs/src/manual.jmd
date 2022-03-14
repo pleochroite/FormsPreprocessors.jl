@@ -1,3 +1,10 @@
+---
+title : Manual
+author : schigy
+date : 2022-03-14
+---
+
+
 # Manual
 
 FormsPreprocessors is a tiny preprocessing tool for questionnaire data (such as one obtained using Google Forms) to convert 'raw' data to ready-to-analyze style. 
@@ -95,7 +102,7 @@ direct_product(d, :Gender, :Age, :GenderxAge; delim="-")
 
 Now, MC responses are stored in columns in vector-form, which need to be encoded in order for us to visualize and analyze. One hot encoding is one of the most simple way of encoding. One column of N possible responses is encoded to N columns of yes/no values.
 
-!!! warning
+!!! warning "Specifying `ordered_answers` recommended"
     When keyword argument `ordered_answers` is not specified, the order of resulting columns is "appearance order", which is often undesirable. 
 
 ```julia; results = "hidden"
