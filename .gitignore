@@ -26,3 +26,4 @@ Manifest.toml
 
 .DS_Store
 example/.~lock.sample_data.csv#
+.vscode/
