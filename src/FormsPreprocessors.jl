@@ -20,10 +20,12 @@ function apply_dict(dict, x)
     end
 end
 
+
 function convert_answer(df::DataFrame, key, newcol, dict)
     _r = map(x -> apply_dict(dict, x), df[:, key])
     rename!(DataFrame(x1 = _r), [newcol])
 end
+
 
 function conversion_dict(vec1, vec2)
     if length(vec1) > length(unique(vec1))
@@ -35,6 +37,7 @@ function conversion_dict(vec1, vec2)
     end
     Dict([val1 => val2 for (val1, val2) ∈ zip(vec1, vec2)])
 end
+
 
 function renaming_dict(vec1, vec2::T where {T<:StringOrEmptyVector} = [], other = "other")
     n = length(vec1) - length(vec2)
@@ -146,6 +149,7 @@ function recode_others(df::DataFrame, key, newkey,
     return recode(df, key, newkey, renamed_from, []; other = other)
 end
 
+
 function flat(vec)
     result = []
     for v ∈ vec
@@ -245,6 +249,7 @@ function split_mc_col!(df::DataFrame, key; delim = ";")
         return transform!(df, key => ByRow(x -> split_mc.(x, delim)) => key)
     end
 end
+
 
 function answers_to_dummy(answer, col)
     results = []
