@@ -10,9 +10,7 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Missings = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
-Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
-Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"
 
 [compat]
 julia = "1.6"
