@@ -7,12 +7,12 @@ date : 2022-03-14
 
 # Manual
 
-FormsPreprocessors is a tiny preprocessing tool for questionnaire data (such as one obtained using Google Forms) to convert 'raw' data to ready toa analyze styled one. 
+FormsPreprocessors is a tiny preprocessing tool for questionnaire data (such as one obtained using Google Forms) to convert 'raw' data to ready to analyze styled one. 
 It provides functions of recoding, one-hot encoding, concatenating columns, and splitting multiple answers responses. Let's see how to use it.
 
 ## Reading a Dataset
 
-As FormsPreprocessors is built on the sholder of DataFrames.jl, read data into a DataFrame.
+As FormsPreprocessors is built on the shoulder of DataFrames.jl, read data into a DataFrame.
 
 ```julia; term = true
 using DataFrames, DataFramesMeta, Chain, CSV
