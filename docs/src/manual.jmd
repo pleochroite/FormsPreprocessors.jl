@@ -35,27 +35,27 @@ Multiple answers by respondent are concatenated with ";" in Google Forms data as
 First, we need to split them into vectors for the processes following.
 
 ``` julia; results = "hidden"
-split_mc_col!(d, :Alcohol)
+split_col!(d, :Alcohol)
 ```
 
 Of course, you can use pipe so to split all MC columns.
 
 ``` julia; results = "hidden"
 @chain d begin
-    split_mc_col!(_, :Fruit)
-    split_mc_col!(_, :Alcohol)
-    split_mc_col!(_, :Studied_English)
-    split_mc_col!(_, :Studied_Math)
-    split_mc_col!(_, :Studied_Science)
-    split_mc_col!(_, :Studied_Arts)
-    split_mc_col!(_, :Studied_Programming)
+    split_col!(_, :Fruit)
+    split_col!(_, :Alcohol)
+    split_col!(_, :Studied_English)
+    split_col!(_, :Studied_Math)
+    split_col!(_, :Studied_Science)
+    split_col!(_, :Studied_Arts)
+    split_col!(_, :Studied_Programming)
 end
 ```
 
 !!! note "Note"
-    Note that `split_mc_col!` mutates the column specified.
-    But, when `split_mc_col!` is applied to a vectorized column, the column remains unchanged.
-    Functions other than `split_mc_col!` append new columns to original DataFrame.
+    Note that `split_col!` mutates the column specified.
+    But, when `split_col!` is applied to a vectorized column, the column remains unchanged.
+    Functions other than `split_col!` append new columns to original DataFrame.
 
 
 ## Consolidating responses to a single value
@@ -101,7 +101,7 @@ direct_product(d, :Gender, :Age, :GenderxAge; delim="-")
 
 ## One-hot encoding
 
-Owing to `split_mc_col!`, multiple answers are stored in columns in vector-form, which need to be encoded in order for us to visualize and analyze. One hot encoding is one of the most simple way of encoding. One column of N possible responses is encoded to N columns of yes/no values.
+Owing to `split_col!`, multiple answers are stored in columns in vector-form, which need to be encoded in order for us to visualize and analyze. One hot encoding is one of the most simple way of encoding. One column of N possible responses is encoded to N columns of yes/no values.
 
 !!! warning "Specifying `ordered_answers` recommended"
     When keyword argument `ordered_answers` is not specified, the order of resulting columns is "appearance order", which is often undesirable. 
