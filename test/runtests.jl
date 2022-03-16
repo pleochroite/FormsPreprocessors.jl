@@ -203,23 +203,23 @@ end
     qbf = "A quick brown fox jumps over the lazy dog."
     sent_multibyte = "天下後世をいかにせばやなど、何彼につけて呼ぶ人あるを見たる時、こは自己をいかにせばやの意なるべしと、われは思へり。"
 
-    @testset "split_mc" begin
-        @test FormsPreprocessors.split_mc("ab,cd,e", ",") == ["ab", "cd", "e"]
-        @test FormsPreprocessors.split_mc(sent) == ["abc", "def", "ghi", "jklm"]
-        @test FormsPreprocessors.split_mc("abcdefghij", "fg") == ["abcde", "hij"]
-        @test FormsPreprocessors.split_mc(qbf) == [qbf]
-        @test FormsPreprocessors.split_mc(sent_multibyte, "、") ==
+    @testset "split_answers" begin
+        @test FormsPreprocessors.split_answers("ab,cd,e", ",") == ["ab", "cd", "e"]
+        @test FormsPreprocessors.split_answers(sent) == ["abc", "def", "ghi", "jklm"]
+        @test FormsPreprocessors.split_answers("abcdefghij", "fg") == ["abcde", "hij"]
+        @test FormsPreprocessors.split_answers(qbf) == [qbf]
+        @test FormsPreprocessors.split_answers(sent_multibyte, "、") ==
               ["天下後世をいかにせばやなど", "何彼につけて呼ぶ人あるを見たる時",
             "こは自己をいかにせばやの意なるべしと", "われは思へり。"]
-        @test FormsPreprocessors.split_mc("", ",") == [""]
-        @test FormsPreprocessors.split_mc(";;;;") == ["", "", "", "", ""]
-        @test ismissing(FormsPreprocessors.split_mc(missing))
-        @test_throws MethodError FormsPreprocessors.split_mc(43, ",")
-        @test_throws MethodError FormsPreprocessors.split_mc(:symbol, ",")
-        @test_throws MethodError FormsPreprocessors.split_mc(["ABCD", ","])
-        @test isequal(FormsPreprocessors.split_mc.(["A;B;C;D", "EFG", missing]),
+        @test FormsPreprocessors.split_answers("", ",") == [""]
+        @test FormsPreprocessors.split_answers(";;;;") == ["", "", "", "", ""]
+        @test ismissing(FormsPreprocessors.split_answers(missing))
+        @test_throws MethodError FormsPreprocessors.split_answers(43, ",")
+        @test_throws MethodError FormsPreprocessors.split_answers(:symbol, ",")
+        @test_throws MethodError FormsPreprocessors.split_answers(["ABCD", ","])
+        @test isequal(FormsPreprocessors.split_answers.(["A;B;C;D", "EFG", missing]),
             [["A", "B", "C", "D"], ["EFG"], missing])
-        @test_throws MethodError FormsPreprocessors.split_mc([missing])
+        @test_throws MethodError FormsPreprocessors.split_answers([missing])
     end
 
     function d_split()
@@ -229,11 +229,11 @@ end
             v4 = [["tomato", "cucumber"], missing])
     end
 
-    @testset "split_mc_col!" begin
-        @test split_mc_col!(d_split(), :v1).v1 == [["apple", "orange"], ["melon", "lemon"]]
-        @test isequal(split_mc_col!(d_split(), :v2).v2, [missing, ["lettuce", "beat"]])
-        @test isequal(split_mc_col!(d_split(), :v3), d_split())
-        @test isequal(split_mc_col!(d_split(), :v4), d_split())
+    @testset "split_col!" begin
+        @test split_col!(d_split(), :v1).v1 == [["apple", "orange"], ["melon", "lemon"]]
+        @test isequal(split_col!(d_split(), :v2).v2, [missing, ["lettuce", "beat"]])
+        @test isequal(split_col!(d_split(), :v3), d_split())
+        @test isequal(split_col!(d_split(), :v4), d_split())
     end
 
 

@@ -80,12 +80,12 @@ Row  │ item    newitem
 ```
 
 You can recode values stored in a column of vectors which can be generated using
-[`split_mc_col!`](@ref).
+[`split_col!`](@ref).
 
 !!! Note
 
     If you recode a column of vectors, single-value answer must be vectorized, 
-    as [`split_mc_col!`](@ref) does.
+    as [`split_col!`](@ref) does.
 
 
 # Example
@@ -217,12 +217,12 @@ function recode_matrix(df::DataFrame, keys::Vector{Symbol},
 end
 
 
-function split_mc(x, delim = ";")
+function split_answers(x, delim = ";")
     ismissing(x) ? missing : split(x, delim)
 end
 
 """
-    split_mc_col!(df, key; delim=";")
+    split_col!(df, key; delim=";")
 
 Mutates `key` columns with values of "`delim`-concatenated" MA answers into column with vectors.
 
@@ -230,7 +230,7 @@ Mutates `key` columns with values of "`delim`-concatenated" MA answers into colu
 
 ```
 julia> df = DataFrame(item=["Apple;Orange", "Tomato", "Tomato;Pepper"])
-julia> split_mc_col!(df, :item)
+julia> split_col!(df, :item)
 3x1 DataFrame
 Row  │ item                              
      │ Array…                            
@@ -240,13 +240,13 @@ Row  │ item
 3    │ ["Tomato", "Pepper"]
 ```
 """
-function split_mc_col!(df::DataFrame, key; delim = ";")
+function split_col!(df::DataFrame, key; delim = ";")
     # if col is already split, returns df itself
     if all(x -> typeof(x) <: Union{AbstractVector, Missing}, df[:,key])
         @warn "Column $(key) seems to be already split. Original dataframe is returned."
         return df
     else
-        return transform!(df, key => ByRow(x -> split_mc.(x, delim)) => key)
+        return transform!(df, key => ByRow(x -> split_answers.(x, delim)) => key)
     end
 end
 
@@ -268,7 +268,7 @@ end
     onehot(df, key; ordered_answers=[])
 
 Performs one-hot encoding on `key` column.
-The column is expected to be of vectors, as `split_mc_col!` generates.
+The column is expected to be of vectors, as `split_col!` generates.
 If you want to sort columns generated, specify `ordered_answers`.
 If not `ordered_answers` specified, columns are ordered by value appearance.
 
@@ -448,5 +448,5 @@ function find_range(val::MaybeReal, ranges::Vector{Tuple{T,P}} where {T<:Real,P<
 end
 
 
-export split_mc_col!, recode, recode_matrix, recode_others, onehot, discretize, direct_product
+export split_col!, recode, recode_matrix, recode_others, onehot, discretize, direct_product
 end
