@@ -29,7 +29,7 @@ rename!(d, ["timestamp", "Gender", "Age", "Alcohol", "Fruit", "Price",
     "Studied_English", "Studied_Math", "Studied_Science", "Studied_Arts", "Studied_Programming"])
 ```
 
-## Split MC answers
+## Splitting MC answers
 
 MC response is concatenated with ";" in Google Forms data as you see in the Alcohol column. 
 First, we need to split these responses into vectors for the processes following.
@@ -54,13 +54,14 @@ end
 
 !!! note "Note"
     Note that `split_mc_col!` mutates the column specified.
-    When `split_mc_col!` is applied to a vectorized column, the column remains unchanged.
+    But, when `split_mc_col!` is applied to a vectorized column, the column remains unchanged.
     Functions other than `split_mc_col!` append new columns to original DataFrame.
 
 
-## Recoding open responses
+## Consolidating multiple responses to a single value
 
-Next, it is typical to recode open responses to one value, say, "other", because open responses for "other:______" form are stored as respondent input. 
+It is typical to consolidate responses to a single value, say, "other".
+If you get data from Google Forms, responses for open question including "other:____" are stored as respondent input. Consolidating these "rare" responses makes things simpler.
 
 Note that fourth argument for `recode_others` is a vector of responses which you want to *keep unchanged*. All appeared values but in the vector will be recoded into `other="other"`.
 
@@ -73,13 +74,13 @@ Note that fourth argument for `recode_others` is a vector of responses which you
 
 If you want to recode values to new ones, use `recode` of which fourth argument `vec_from` is a vector of raw values, and fifth `vec_to` is a vector of recoded ones.
 It recodes as `vec_from[1] => vec_to[1], vec_from[2] => vec_to[2], ...`. If `vec_to` is shorter than `vec_from`, the leftovers in `vec_from` are recoded to `other`.
-Therefore, all appeared values but in `vec_from` *remain unchanged*, which is contrary to preceding `recode_others`.
+Hence, all appeared values but in `vec_from` *remain unchanged*, which is contrary to preceding `recode_others`.
 
 ``` julia; results = "hidden"
 recode(d, :Age, :newAge, ["-19", "20-34", "35-49", "50-"], ["Teen", "Young", "Middle", "Old"])
 ```
 
-## Recoding matrix-type single responses
+## Recoding matrix-type single choice responses
 
 `recode_matrix` supports recoding multiple columns using identical conversion dictionary. 
 
@@ -90,7 +91,7 @@ recode_matrix(d, ns[7:10],
     ["Recent", "Recent", "Silent", "Silent", "Never"])
 ```
 
-## Concatenating multiple values
+## Concatenating two columns
 
 Using `direct_product`, you can obtain concatenation of two columns, such as "Male-Young", and "Female-Old", 
 
@@ -112,7 +113,7 @@ Now, MC responses are stored in columns in vector-form, which need to be encoded
 
 ## Classifying numerical responses
 
-Function `discretize` offers classification of numerical response.
+Function `discretize` provides classification of numerical response.
 Specified border values as third argument, it automatically converts to the ranges be (-Inf, `thresholds[1]`), [`thresholds[1]`, `thresholds[2]`), ..., [`thresholds[end]`, Inf). 
 So, the length of class names should be `length(thresholds) + 1`.
 If class names not specified, they will be concatenation of border values.
