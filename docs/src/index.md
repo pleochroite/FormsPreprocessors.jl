@@ -7,9 +7,9 @@ A preprocessor for Google Forms CSV.
 
 ## Package Features
 
-- Recodes values into new ones, including answers into "others"
-- Multiple recoding for matrix-type single choice answers
-- Splits "delimiter-concatenated" multiple choice answers into vectors
+- Recoding responses into new ones, including into "others"
+- Recoding for grid-type multiple choice answers
+- Splitttng "delimiter-concatenated" multiple answers into vectors
 - One-hot encoding a column of split vectors
-- Converts numerical answers into classes
-- Concatenate two column values into one
+- Converting numerical answers into classes
+- Concatenating two column values into one
