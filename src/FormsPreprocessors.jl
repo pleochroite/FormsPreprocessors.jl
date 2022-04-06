@@ -201,9 +201,7 @@ function recode_matrix(df::DataFrame, keys::Vector{Symbol},
     newcolnames = "$(prefix)" .* "_" .* String.(keys)
     colliding_names = intersect(names(df), newcolnames)
 
-    if colliding_names ≠ []
-        throw(ArgumentError("New column name already exists in the dataframe."))
-    end
+    colliding_names == [] || throw(ArgumentError("New column name already exists in the dataframe."))
 
     renamer = renaming_dict(vec_from, vec_to, other)
 
@@ -291,17 +289,17 @@ function onehot(df::DataFrame, key; ordered_answers = [])
     _appeared = col |> flat |> skipmissing |> unique
     appeared = filter(x -> x ≠ "" && !(ismissing(x)), _appeared)
 
-    if length(ordered_answers) == 0
+    # error checking starts here
+    if length(ordered_answers) == 0 
         ordered_answers = appeared
     end
 
-    if setdiff(appeared, ordered_answers) ≠ []
+    setdiff(appeared, ordered_answers) == [] ||
         throw(ArgumentError("Some input are missing from ordered_answers. Please check: $(setdiff(appeared, ordered_answers))"))
-    end
 
-    if length(ordered_answers) > length(unique(ordered_answers))
+    length(ordered_answers) > length(unique(ordered_answers)) &&
         throw(ArgumentError("Duplicate values detected. Please check: $(ordered_answers)"))
-    end
+    # error checking ends
 
     dummy_cols = []
     for ans ∈ ordered_answers
@@ -419,9 +417,7 @@ function discretize(df::DataFrame, key, thresholds::Vector{T} where {T<:Real},
         newcodes = ["$(r[1])-$(r[2])" for r ∈ _ranges]
     end
 
-    if length(thresholds) + 1 ≠ length(newcodes)
-        throw(ArgumentError("Length of new codes mismatches."))
-    end
+    length(thresholds) + 1 == length(newcodes) || throw(ArgumentError("Length of new codes mismatches."))
 
     _r = [find_range(val, _ranges) for val ∈ df[:, key]]
     result = DataFrame(x = map(x -> get_at(newcodes, x), _r))
