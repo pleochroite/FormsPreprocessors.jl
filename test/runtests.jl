@@ -155,6 +155,11 @@ end
                 ["こころ", "吾輩は猫である", "ゆめじゅうや"], "その他", "山月記", missing])
     end
 
+    @testset "recode_dic" begin
+        @test recode(df(), :bt, :newkey, bloodtype).newkey == df_cv.bt
+    end
+
+
     @testset "recode_others" begin
         @test recode_others(df(), :bt, :newbt, ks[1:2]).newbt ==
               ["A", "A", "other", "other", "B", "B", "other"]

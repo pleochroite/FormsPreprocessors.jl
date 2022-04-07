@@ -114,8 +114,28 @@ function recode(df::DataFrame, key, newkey,
     return hcat(df, result)
 end
 
+"""
+    recode(df, key, newkey, dic; other="other")
+
+Recode values in `key` using `dic`.
+
+# Example
+```
+julia> df = DataFrame(item = ["Apple", "Orange", "Tomato", "Pepper"])
+julia> recode(df, :item, :newitem, Dict(["Apple" => "Fruit", "Orange" => "Fruit"]))
+4×2 DataFrame
+ Row │ item    newitem 
+     │ String  String  
+─────┼─────────────────
+   1 │ Apple   Fruit
+   2 │ Orange  Fruit
+   3 │ Tomato  Tomato
+   4 │ Pepper  Pepper
+
+```
+"""
 function recode(df::DataFrame, key, newkey, dic::Dict{String, String})
-    recode(df, key, newkey, keys(dic), values(dic))
+    recode(df, key, newkey, collect(keys(dic)), collect(values(dic)))
 end
 
 
