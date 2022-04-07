@@ -114,6 +114,10 @@ function recode(df::DataFrame, key, newkey,
     return hcat(df, result)
 end
 
+function recode(df::DataFrame, key, newkey, dic::Dict{String, String})
+    recode(df, key, newkey, keys(dic), values(dic))
+end
+
 
 """
     recode_others(df, key, newkey, regular_answers; other="other")
