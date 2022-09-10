@@ -4,7 +4,7 @@ using FormsPreprocessors
 d = CSV.read("./example/sample_data.csv", DataFrame)
 
 rename!(d, ["timestamp", "Gender", "Age", "Alcohol", "Fruit", "Price",
-    "Lastvisit_SM", "Lastvisit_CVS", "Lastvisit_DS", "LastVisit_Glos",
+    "Lastvisit_SM", "Lastvisit_CVS", "Lastvisit_DS", "LastVisit_Vd",
     "Studied_English", "Studied_Math", "Studied_Science", "Studied_Arts", "Studied_Programming"])
 
 ns = Symbol.(names(d))
